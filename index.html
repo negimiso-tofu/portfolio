@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="大山峻平のWeb制作ポートフォリオ。HTML/CSS/JavaScriptによる自主制作サイトを掲載しています。">
+<title>Portfolio｜大山峻平</title>
+<style>
+  :root{
+    --bg:#0e0f12; --surface:#16181d; --line:#2a2d35;
+    --text:#e8e6e1; --muted:#9a9aa2; --accent:#c9a227;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif;
+    line-height:1.8;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px}
+
+  header{padding:96px 0 64px;border-bottom:1px solid var(--line)}
+  .eyebrow{color:var(--accent);letter-spacing:.24em;font-size:12px;margin:0 0 16px}
+  h1{font-size:clamp(28px,5vw,44px);line-height:1.35;margin:0 0 20px;font-weight:600}
+  .lead{color:var(--muted);margin:0;max-width:38em}
+
+  main{padding:64px 0 40px}
+  h2{font-size:13px;letter-spacing:.2em;color:var(--muted);font-weight:500;
+    margin:0 0 28px;text-transform:uppercase}
+
+  .grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .card{display:block;background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;padding:28px;text-decoration:none;color:inherit;
+    transition:border-color .25s,transform .25s}
+  .card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-3px)}
+  .card h3{margin:0 0 10px;font-size:20px;font-weight:600}
+  .card p{margin:0 0 18px;color:var(--muted);font-size:14px}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;padding:0;list-style:none}
+  .tags li{font-size:11px;letter-spacing:.06em;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+  .more{color:var(--accent);font-size:13px;letter-spacing:.08em}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 72px;color:var(--muted);font-size:13px}
+  footer p{margin:0 0 8px}
+  a{color:var(--accent)}
+
+  @media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">PORTFOLIO</p>
+    <h1>作れることを、<br>見せられる形にしています。</h1>
+    <p class="lead">法人営業を10年やってきました。いま、顧客の課題を聞いて形にする仕事を、Webの側からもできるようにしています。以下はすべて自主制作です。</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <h2>Works</h2>
+  <div class="grid">
+
+    <a class="card" href="./sushi-hp/">
+      <h3>銀座 鮨しずく</h3>
+      <p>高級鮨店のコーポレートサイト。黒と金を基調に、縦書きのコピーで和の余白を表現しました。</p>
+      <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>レスポンシブ</li></ul>
+      <span class="more">作品を見る →</span>
+    </a>
+
+    <a class="card" href="./icarus-hp/">
+      <h3>IKAROS — 太陽へ至る航跡</h3>
+      <p>イカロス神話をスクロールでたどる読み物。「一度上がった高度には戻れない」という物語を、UIそのもので表現しています。</p>
+      <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>状態管理</li></ul>
+      <span class="more">作品を見る →</span>
+    </a>
+
+  </div>
+</main>
+
+<footer class="wrap">
+  <p>掲載している店名・住所・電話番号・団体名は、すべて架空のものです。</p>
+  <p>ライブラリやCMSを使わず、HTML / CSS / JavaScript のみで制作しています。</p>
+  <p>稼働可能時間：平日20時以降および土日</p>
+</footer>
+
+</body>
+</html>

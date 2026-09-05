@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja" data-ascent-level="0">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="イカロスの神話を、飛翔と再上昇不能のスクロール体験でたどる非公式インタラクティブ資料。">
+  <title>IKAROS — 太陽へ至る航跡</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#story">記録本文へ移動</a>
+  <div class="sky-grain" aria-hidden="true"></div>
+  <div class="ascent-effects" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <header class="hud" aria-label="飛行記録">
+    <div class="hud-mark"><span>Δ</span><b>IKAROS<br>FLIGHT ARCHIVE</b></div>
+    <div class="hud-location"><small id="zoneCode">GROUND</small><strong id="zoneName">クレタ島・迷宮</strong></div>
+    <div class="hud-status"><small>STATUS</small><strong id="statusText"><span aria-hidden="true">◇</span> 翼を構築中</strong></div>
+    <button class="motion-toggle" id="motionToggle" type="button" aria-pressed="false">演出：標準</button>
+  </header>
+
+  <aside class="altimeter" aria-label="現在の飛行高度">
+    <div class="altimeter-readout"><span id="altitude">0000</span><small> m</small></div>
+    <div class="altimeter-track" aria-hidden="true">
+      <span class="altimeter-fill" id="altimeterFill"></span>
+      <span class="altimeter-cursor" id="altimeterCursor"></span>
+      <span class="icarus-marker">
+        <span class="icarus-sprite flying"><img src="icarus-flight-sprite-alpha.png" alt=""></span>
+        <span class="icarus-sprite falling"><img src="icarus-flight-sprite-alpha.png" alt=""></span>
+      </span>
+      <ol id="altimeterTicks"></ol>
+    </div>
+    <span class="altimeter-label">FLIGHT TRACE</span>
+  </aside>
+
+  <div class="warning" id="warning" role="status" aria-live="polite" aria-atomic="true">
+    <span class="warning-icon" aria-hidden="true">!</span>
+    <div><small>THE WAX REMEMBERS THE SUN</small><strong id="warningTitle">上昇不能</strong><p id="warningText">蝋が熱を記憶している。翼はもう、同じ空を登れない。</p></div>
+    <b id="warningLevel">I</b>
+  </div>
+
+  <main id="story">
+    <section class="chapter hero active" id="ground" data-level="0" data-code="GROUND" data-name="クレタ島・迷宮" data-altitude="0">
+      <div class="hero-sun" aria-hidden="true"></div>
+      <div class="hero-wing wing-left" aria-hidden="true"></div><div class="hero-wing wing-right" aria-hidden="true"></div>
+      <div class="chapter-inner hero-copy reveal">
+        <p class="eyebrow">ARCHIVE 01 · HELLENIC MYTH</p>
+        <h1>太陽へ至る<br><em>航跡。</em></h1>
+        <p class="lead">父は「高すぎず、低すぎず」と言った。<br>けれど空は、忠告よりも広かった。</p>
+        <a class="descent-link" href="#level-1">飛行記録を開始 <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="intro-note"><span>非公式・神話資料</span><p>スクロールして飛行を追体験してください。上へ戻ろうとすると、損傷した翼が抵抗します。</p></div>
+    </section>
+
+    <section class="chapter" id="level-1" data-level="1" data-code="LEVEL 1" data-name="工匠の迷宮" data-altitude="350">
+      <div class="visual labyrinth" aria-hidden="true"><i></i><i></i><i></i></div>
+      <article class="record reveal"><header><span>01</span><div><small>高度 350 m</small><h2>工匠の迷宮</h2></div></header><p>名工ダイダロスは、クレタ王ミノスのために脱出不能の迷宮を造った。しかし秘密を知りすぎた工匠と息子イカロスもまた、その塔へ閉じ込められる。</p><dl><div><dt>危険</dt><dd>王の監視、出口のない構造</dd></div><div><dt>再上昇時</dt><dd>胸騒ぎ — ごく軽い視界の揺れ</dd></div></dl></article>
+    </section>
+
+    <section class="chapter" id="level-2" data-level="2" data-code="LEVEL 2" data-name="蝋と羽根" data-altitude="980">
+      <div class="visual feather" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <article class="record reveal"><header><span>02</span><div><small>高度 980 m</small><h2>蝋と羽根</h2></div></header><p>陸と海を塞がれても、空は王の領分ではない。ダイダロスは鳥の羽根を糸で束ね、蜜蝋で留め、人の腕に空の形を与えた。</p><blockquote>「海面に近づけば羽根は湿り、太陽に近づけば蝋は溶ける」</blockquote><dl><div><dt>危険</dt><dd>脆い接合部、風向の変化</dd></div><div><dt>再上昇時</dt><dd>軋み — 翼端の色ずれ</dd></div></dl></article>
+    </section>
+
+    <section class="chapter" id="level-3" data-level="3" data-code="LEVEL 3" data-name="中空の戒め" data-altitude="2100">
+      <div class="visual compass" aria-hidden="true"><i></i><b>N</b><b>S</b></div>
+      <article class="record reveal"><header><span>03</span><div><small>高度 2,100 m</small><h2>中空の戒め</h2></div></header><p>ふたりは塔を越えた。父が示したのは、海と天のあいだを縫う安全な航路。古代の物語において「中庸」は、単なる慎重さではなく生き延びるための知恵だった。</p><dl><div><dt>危険</dt><dd>高揚、距離感の喪失</dd></div><div><dt>再上昇時</dt><dd>失調 — 方位と像が二重になる</dd></div></dl></article>
+    </section>
+
+    <section class="chapter" id="level-4" data-level="4" data-code="LEVEL 4" data-name="歓喜の上昇" data-altitude="3800">
+      <div class="visual sun-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+      <article class="record reveal"><header><span>04</span><div><small>高度 3,800 m</small><h2>歓喜の上昇</h2></div></header><p>飛べる。その発見は恐怖を追い越す。イカロスは父の声から離れ、光の方へ高度を上げた。傲慢だったのか、自由に初めて触れた若者の歓喜だったのか。</p><dl><div><dt>危険</dt><dd>熱、陶酔、警告の遠のき</dd></div><div><dt>再上昇時</dt><dd>灼熱 — 強い振動と警告ノイズ</dd></div></dl></article>
+    </section>
+
+    <section class="chapter" id="level-5" data-level="5" data-code="LEVEL 5" data-name="融解点" data-altitude="5400">
+      <div class="visual melting-wing" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <article class="record reveal"><header><span>05</span><div><small>高度 5,400 m</small><h2>融解点</h2></div></header><p>熱はまず目に見えない。次に蝋が雫となり、羽根が一枚ずつ風へ返される。翼は「飛べた」という記憶だけを残して形を失った。</p><dl><div><dt>危険</dt><dd>翼面崩壊、揚力の消失</dd></div><div><dt>再上昇時</dt><dd>剝離 — 感覚の欠落、強制降下</dd></div></dl></article>
+    </section>
+
+    <section class="chapter" id="level-6" data-level="6" data-code="FINAL" data-name="イカリア海" data-altitude="0">
+      <div class="visual sea" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <article class="record final-record reveal"><header><span>06</span><div><small>航跡消失</small><h2>イカリア海</h2></div></header><p>羽ばたく腕に、もう羽根はない。少年は海へ落ち、その名は海と島に残ったと伝えられる。これは「高望みへの罰」だけではない。自由への衝動、親の恐れ、技術の限界を、読む時代ごとに映す神話である。</p><p class="epilogue">空は閉じなかった。<br>ただ、同じ翼では二度と登れなかった。</p><a class="source-link" href="#ground" data-safe-scroll>記録の冒頭を見る</a></article>
+    </section>
+  </main>
+
+  <footer><span>IKAROS / AN INTERACTIVE MYTH ARCHIVE</span><span>Original educational experience — not an official work.</span></footer>
+  <noscript><style>.reveal{opacity:1!important;transform:none!important}.hud,.altimeter{position:absolute}</style><p class="noscript">JavaScriptが無効です。本文はそのままお読みいただけます。</p></noscript>
+  <script src="script.js"></script>
+</body>
+</html>

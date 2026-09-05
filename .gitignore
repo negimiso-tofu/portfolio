@@ -1,0 +1,27 @@
+# OS / エディタ
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+
+# 依存関係・ビルド
+node_modules/
+dist/
+build/
+
+# 機密情報（絶対に上げない）
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+auth.json
+
+# 未使用の素材（HTML/CSSから参照されていないため公開対象外。ファイル自体は手元に残しています）
+icarus-hp/exec-*.png
+icarus-hp/icarus-flight-sprite.png
+
+# ログ・一時ファイル
+*.log
+_下書き*
+_backup_list_*.csv
