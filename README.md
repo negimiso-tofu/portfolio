@@ -2,7 +2,7 @@
 
 **HTML / CSS / JavaScript だけで作った自主制作サイト置き場。** フレームワーク・CMS・ビルドツール・外部ライブラリは使っていない。
 
-公開: https://leeks8542-dotcom.github.io/portfolio/
+公開: https://negimiso-tofu.github.io/portfolio/
 
 ## 中身は index.html と、作品ごとのディレクトリだけ
 
@@ -32,7 +32,7 @@
 ## ローカルで開く
 
 ```bash
-git clone https://github.com/leeks8542-dotcom/portfolio.git
+git clone https://github.com/negimiso-tofu/portfolio.git
 cd portfolio
 ```
 
