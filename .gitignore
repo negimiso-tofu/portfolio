@@ -25,3 +25,6 @@ icarus-hp/icarus-flight-sprite.png
 *.log
 _下書き*
 _backup_list_*.csv
+
+# 別リポジトリとして管理（副業ポートフォリオとは別物）
+Munder Difflin/
