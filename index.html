@@ -16,10 +16,23 @@
     line-height:1.8;-webkit-font-smoothing:antialiased}
   .wrap{max-width:920px;margin:0 auto;padding:0 24px}
 
-  header{padding:96px 0 64px;border-bottom:1px solid var(--line)}
-  .eyebrow{color:var(--accent);letter-spacing:.24em;font-size:12px;margin:0 0 16px}
-  h1{font-size:clamp(28px,5vw,44px);line-height:1.35;margin:0 0 20px;font-weight:600}
-  .lead{color:var(--muted);margin:0;max-width:38em}
+  /* ヒーロー：ねぎみそとうふの写真を敷き、上に暗幕を重ねて文字を読ませる */
+  header{position:relative;isolation:isolate;overflow:hidden;
+    padding:140px 0 110px;border-bottom:1px solid var(--line)}
+  .hero-bg{position:absolute;inset:0;z-index:-2;
+    background:url("assets/negimiso-tofu.jpg") center 42% / cover no-repeat;
+    transform:scale(1.04);filter:saturate(.9)}
+  .hero-bg::after{content:"";position:absolute;inset:0;
+    background:
+      linear-gradient(180deg,rgba(14,15,18,.35) 0%,rgba(14,15,18,.58) 60%,var(--bg) 100%),
+      radial-gradient(110% 85% at 12% 52%,rgba(14,15,18,.88) 0%,rgba(14,15,18,.15) 72%)}
+  .eyebrow{color:var(--accent);letter-spacing:.24em;font-size:12px;margin:0 0 14px}
+  .name{margin:0 0 6px;font-size:clamp(13px,2.4vw,15px);letter-spacing:.28em;
+    color:var(--text);opacity:.85}
+  h1{font-size:clamp(34px,7vw,64px);line-height:1.25;margin:0 0 20px;font-weight:600;
+    letter-spacing:.02em;text-shadow:0 2px 24px rgba(0,0,0,.55)}
+  .lead{color:var(--text);opacity:.82;margin:0;max-width:38em;
+    text-shadow:0 1px 12px rgba(0,0,0,.5)}
 
   main{padding:64px 0 40px}
   h2{font-size:13px;letter-spacing:.2em;color:var(--muted);font-weight:500;
@@ -37,9 +50,32 @@
     border:1px solid var(--line);border-radius:999px;padding:4px 11px}
   .more{color:var(--accent);font-size:13px;letter-spacing:.08em}
 
+  section.block{padding:56px 0;border-top:1px solid var(--line)}
+  .flow-list{list-style:none;margin:0;padding:0;display:grid;gap:18px}
+  .flow-list li{display:flex;gap:16px;align-items:baseline}
+  .flow-list b{flex:0 0 auto;color:var(--accent);font-size:13px;letter-spacing:.06em;
+    border:1px solid var(--line);border-radius:999px;padding:3px 12px}
+  .flow-list span{color:var(--text);opacity:.9;font-size:14px}
+
+  .contact-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:28px;font-size:14px}
+  .contact-box p{margin:0 0 14px;color:var(--muted)}
+  .contact-links{display:flex;flex-wrap:wrap;gap:12px;margin:0;padding:0;list-style:none}
+  .contact-links a{display:inline-block;border:1px solid var(--line);border-radius:999px;
+    padding:9px 18px;color:var(--text);text-decoration:none;font-size:13px;transition:border-color .2s}
+  .contact-links a:hover,.contact-links a:focus-visible{border-color:var(--accent)}
+
   footer{border-top:1px solid var(--line);padding:40px 0 72px;color:var(--muted);font-size:13px}
   footer p{margin:0 0 8px}
   a{color:var(--accent)}
+
+  /* 狭い画面では横方向の暗幕が効かないので、全面を均一に落として本文を読ませる */
+  @media (max-width:700px){
+    header{padding:104px 0 80px}
+    .hero-bg{background-position:center 46%}
+    .hero-bg::after{background:linear-gradient(180deg,
+      rgba(14,15,18,.52) 0%,rgba(14,15,18,.74) 58%,var(--bg) 100%)}
+  }
 
   @media (prefers-reduced-motion:reduce){.card{transition:none}}
 </style>
@@ -47,10 +83,12 @@
 <body>
 
 <header>
+  <div class="hero-bg" role="img" aria-label="ねぎと味噌をのせた冷奴"></div>
   <div class="wrap">
     <p class="eyebrow">PORTFOLIO</p>
-    <h1>「こう見せたい」が、<br>まだ言葉にならなくても。</h1>
-    <p class="lead">決まっていないところから、一緒に決めていきます。制作は HTML / CSS / JavaScript。以下はすべて自主制作です。</p>
+    <p class="name">ねぎみそとうふ</p>
+    <h1>何でも作ります。</h1>
+    <p class="lead">制作は HTML / CSS / JavaScript。以下はすべて自主制作です。</p>
   </div>
 </header>
 
@@ -72,8 +110,37 @@
       <span class="more">作品を見る →</span>
     </a>
 
+    <a class="card" href="./tax-hp/">
+      <h3>あおば税理士事務所</h3>
+      <p>士業事務所のコーポレートサイト。構造化データ・パンくず・フォーム設計まで踏み込んだ、SEO/アクセシビリティ込みの制作見本です。</p>
+      <ul class="tags"><li>HTML</li><li>CSS</li><li>JavaScript</li><li>SEO</li></ul>
+      <span class="more">作品を見る →</span>
+    </a>
+
   </div>
 </main>
+
+<section class="block wrap" id="flow">
+  <h2>Flow</h2>
+  <ol class="flow-list">
+    <li><b>01</b><span>お問い合わせ — 作りたいものと参考サイトがあれば教えてください</span></li>
+    <li><b>02</b><span>ヒアリング — ページ数・機能・納期を確認し、お見積もりを提示します</span></li>
+    <li><b>03</b><span>構成案の確認 — ページ構成・デザインの方向性をすり合わせます</span></li>
+    <li><b>04</b><span>制作 — 実装を進め、途中経過を確認いただきながら仕上げます</span></li>
+    <li><b>05</b><span>納品 — コード一式をお渡し、または公開まで代行します</span></li>
+  </ol>
+</section>
+
+<section class="block wrap" id="contact">
+  <h2>Contact</h2>
+  <div class="contact-box">
+    <p>ご依頼・ご相談はこちらまで。料金は内容により応相談です。稼働時間帯の都合上、ご返信までお時間をいただく場合があります。</p>
+    <ul class="contact-links">
+      <li><a href="https://x.com/negimiso8542">X（DM）</a></li>
+      <li><a href="https://note.com/negimiso8542">note</a></li>
+    </ul>
+  </div>
+</section>
 
 <footer class="wrap">
   <p>掲載している店名・住所・電話番号・団体名は、すべて架空のものです。</p>

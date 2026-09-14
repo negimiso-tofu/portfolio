@@ -1,0 +1,8 @@
+# 注意：robots.txt はドメイン直下に置いたものだけが有効です。
+# このファイルはサブフォルダにあるため実際には読まれません。
+# 本番納品時に https://（本番ドメイン）/robots.txt として設置してください。
+
+User-agent: *
+Allow: /
+
+Sitemap: https://negimiso-tofu.github.io/portfolio/tax-hp/sitemap.xml
