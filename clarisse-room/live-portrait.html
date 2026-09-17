@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="マウス追従・呼吸・光沢演出つきの、静止画1枚を動く肖像に見せる個人制作ウィジェットです。">
+<title>クラリス — 動く肖像（個人制作）</title>
+<style>
+  :root{--gold:#c9a86a; --gold-dim:#8f7a4e; --ink:#e8e2d5; --sub:#a99fc0}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(1100px 650px at 75% -10%, #2e2547 0%, transparent 60%),
+      radial-gradient(900px 500px at -5% 110%, #241d38 0%, transparent 55%),
+      #17141f;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:"Yu Mincho","Hiragino Mincho ProN",serif; color:var(--ink); overflow:hidden;
+    gap:18px; padding:20px;
+  }
+  h1{font-size:16px; letter-spacing:.45em; color:var(--gold); font-weight:normal}
+  .stage{ perspective:900px; }
+  .tilt{
+    transform-style:preserve-3d;
+    transition:transform .08s linear;
+    will-change:transform;
+  }
+  .frame{
+    border:3px solid var(--gold-dim); border-radius:10px; padding:8px;
+    background:#141020; box-shadow:0 20px 60px rgba(0,0,0,.55), 0 0 40px rgba(141,121,201,.12);
+  }
+  .inner{
+    border:1px solid #3b3355; border-radius:6px; overflow:hidden; position:relative;
+    width:min(64vw, 46vh, 420px); aspect-ratio:4/5; background:#1b1530;
+  }
+  .layer-img{
+    position:absolute; inset:-4%;
+    transition:transform .12s linear; will-change:transform;
+  }
+  .layer-img img{width:100%; height:100%; object-fit:cover; object-position:top; display:block;
+    animation:breath 4.6s ease-in-out infinite;
+  }
+  @keyframes breath{
+    0%,100%{transform:scale(1) translateY(0)}
+    50%{transform:scale(1.014) translateY(-0.5%)}
+  }
+  .sheen{
+    position:absolute; inset:0; pointer-events:none; z-index:3; opacity:0;
+    background:linear-gradient(115deg, transparent 30%, rgba(255,240,210,.16) 46%, rgba(255,240,210,.28) 50%, rgba(255,240,210,.16) 54%, transparent 70%);
+    transform:translateX(-120%);
+  }
+  .sheen.run{animation:sweep 2.4s ease-in-out}
+  @keyframes sweep{
+    0%{opacity:0; transform:translateX(-120%)}
+    15%{opacity:1}
+    85%{opacity:1}
+    100%{opacity:0; transform:translateX(120%)}
+  }
+  .vig{
+    position:absolute; inset:0; pointer-events:none; z-index:2;
+    background:radial-gradient(circle at 50% 38%, transparent 55%, rgba(10,6,20,.42) 100%);
+    transition:transform .15s linear;
+  }
+  .bubble{
+    min-height:52px; max-width:520px; display:flex; align-items:center; justify-content:center;
+    padding:12px 22px; border:1px solid var(--gold-dim); border-radius:999px;
+    background:rgba(26,21,40,.85); font-size:14px; line-height:1.7; letter-spacing:.06em;
+    opacity:0; transform:translateY(6px); transition:.35s;
+  }
+  .bubble.show{opacity:1; transform:none}
+  .hint{font-size:11px; color:var(--sub); letter-spacing:.25em}
+</style>
+</head>
+<body>
+  <h1>クラリス — 動く肖像</h1>
+
+  <div class="stage">
+    <div class="tilt" id="tilt">
+      <div class="frame"><div class="inner" id="inner">
+        <div class="layer-img" id="layerImg">
+          <img id="pic" src="assets/clarisse-portrait.webp" alt="クラリス">
+        </div>
+        <div class="vig" id="vig"></div>
+        <div class="sheen" id="sheen"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="bubble" id="bubble"></div>
+  <div class="hint">マウスで視線が動きますの ✦ クリックでお喋りいたしますわ</div>
+
+<script>
+const tilt=document.getElementById('tilt');
+const layerImg=document.getElementById('layerImg');
+const vig=document.getElementById('vig');
+let tx=0, ty=0, cx=0, cy=0;
+addEventListener('mousemove',e=>{
+  tx=(e.clientX/innerWidth-0.5)*2;
+  ty=(e.clientY/innerHeight-0.5)*2;
+});
+addEventListener('touchmove',e=>{
+  const t=e.touches[0]; if(!t)return;
+  tx=(t.clientX/innerWidth-0.5)*2; ty=(t.clientY/innerHeight-0.5)*2;
+},{passive:true});
+(function loop(){
+  cx+=(tx-cx)*0.08; cy+=(ty-cy)*0.08;
+  tilt.style.transform=`rotateY(${cx*8}deg) rotateX(${-cy*6}deg)`;
+  layerImg.style.transform=`translate(${cx*2.2}%, ${cy*1.6}%)`;
+  vig.style.transform=`translate(${-cx*1.2}%, ${-cy*0.8}%)`;
+  requestAnimationFrame(loop);
+})();
+
+const sheen=document.getElementById('sheen');
+setInterval(()=>{
+  sheen.classList.remove('run'); void sheen.offsetWidth; sheen.classList.add('run');
+},9000);
+
+const LINES=[
+  'お呼びでございますか、マスター。',
+  '本日もお傍でお仕えいたしますわ。',
+  'ふふ、そんなに見つめられると照れてしまいますわ。',
+  '休憩も大切なお仕事ですのよ？',
+  'お茶をお淹れいたしましょうか。',
+  'マスターの今日のご予定、整理いたしましょうか？',
+  '無理は禁物ですわ。水分補給もお忘れなく。',
+  'わたくし、いつでもここにおりますわ。',
+  '今日のマスターも、なかなか凛々しくていらっしゃいますわ。',
+  '何か作ってみる、その一歩を応援しておりますのよ。'
+];
+const bubble=document.getElementById('bubble');
+let bubbleTimer=null, lastLine=-1;
+document.getElementById('inner').addEventListener('click',()=>{
+  let i; do{ i=Math.floor(Math.random()*LINES.length); }while(i===lastLine);
+  lastLine=i;
+  bubble.textContent=LINES[i];
+  bubble.classList.add('show');
+  tilt.animate([{transform:tilt.style.transform},{transform:tilt.style.transform+' translateY(6px)'},{transform:tilt.style.transform}],{duration:320,easing:'ease-out'});
+  clearTimeout(bubbleTimer);
+  bubbleTimer=setTimeout(()=>bubble.classList.remove('show'),4200);
+});
+</script>
+</body>
+</html>

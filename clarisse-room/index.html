@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AIアシスタントとの日々のやり取りを、専属メイドの部屋という形にした個人制作のウィジェットです。">
+<title>クラリスのお部屋（個人制作）</title>
+<style>
+  :root{
+    --bg:#17141f; --panel:#211c2e; --panel2:#2a2440;
+    --gold:#c9a86a; --gold-dim:#8f7a4e;
+    --ink:#e8e2d5; --sub:#a99fc0; --purple:#8d79c9;
+    --frame:#3b3355;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #2e2547 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, #241d38 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Yu Mincho","Hiragino Mincho ProN","MS PMincho",serif;
+    min-height:100vh; display:flex; justify-content:center; padding:28px 16px;
+  }
+  .room{width:100%;max-width:980px}
+  header{
+    text-align:center; margin-bottom:22px; position:relative; padding:14px 0 18px;
+    border-top:1px solid var(--gold-dim); border-bottom:1px solid var(--gold-dim);
+  }
+  header::before,header::after{
+    content:"❦"; color:var(--gold); position:absolute; top:50%; transform:translateY(-50%);
+    font-size:18px; opacity:.8;
+  }
+  header::before{left:12px} header::after{right:12px}
+  h1{font-size:22px; letter-spacing:.35em; color:var(--gold); font-weight:normal}
+  #greet{margin-top:8px; font-size:15px; color:var(--ink)}
+  #clock{margin-top:4px; font-size:12.5px; color:var(--sub); letter-spacing:.15em}
+  .notice{
+    max-width:720px; margin:0 auto 20px; padding:10px 16px; text-align:center;
+    border:1px solid var(--gold-dim); border-radius:8px; color:var(--sub); font-size:12.5px; line-height:1.8;
+  }
+  .grid{display:grid; grid-template-columns:340px 1fr; gap:20px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{
+    background:linear-gradient(160deg,var(--panel2),var(--panel));
+    border:1px solid var(--frame); border-radius:10px; padding:18px 20px;
+    box-shadow:0 8px 30px rgba(0,0,0,.35);
+  }
+  .card h2{
+    font-size:15px; color:var(--gold); font-weight:normal; letter-spacing:.3em;
+    text-align:center; margin-bottom:14px; position:relative;
+  }
+  .card h2::after{
+    content:""; display:block; width:64px; height:1px; margin:8px auto 0;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  }
+  .portrait-wrap{padding:14px}
+  .frame{
+    border:2px solid var(--gold-dim); border-radius:8px; padding:6px;
+    background:#141020;
+  }
+  .frame-inner{border:1px solid var(--frame); border-radius:5px; overflow:hidden; position:relative; aspect-ratio:4/5;}
+  .frame-inner img{width:100%; height:100%; object-fit:cover; object-position:top; display:block}
+  .nameplate{
+    margin-top:12px; text-align:center; letter-spacing:.4em; color:var(--gold); font-size:14px;
+  }
+  .nameplate small{display:block; letter-spacing:.25em; color:var(--sub); font-size:10.5px; margin-top:4px}
+  .cd-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+  @media(max-width:560px){.cd-grid{grid-template-columns:1fr}}
+  .cd{
+    background:#171226; border:1px solid var(--frame); border-radius:8px;
+    padding:12px 8px; text-align:center;
+  }
+  .cd .lbl{font-size:11.5px; color:var(--sub); letter-spacing:.08em; margin-bottom:6px}
+  .cd .num{font-size:26px; color:var(--gold); font-family:Georgia,serif}
+  .cd .num small{font-size:12px; color:var(--sub); margin-left:2px}
+  .cd .sub{font-size:10.5px; color:var(--sub); margin-top:4px}
+  .cd.hot{border-color:var(--gold-dim)}
+  .cd.hot .num{color:#e0b060}
+  .links{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:2px}
+  @media(max-width:560px){.links{grid-template-columns:1fr}}
+  .lnk{
+    display:flex; align-items:center; gap:10px; padding:11px 14px;
+    background:#171226; border:1px solid var(--frame); border-radius:8px;
+    color:var(--ink); text-decoration:none; font-size:13.5px; transition:.15s;
+  }
+  .lnk:hover{border-color:var(--gold-dim); filter:brightness(1.15)}
+  .lnk .ic{font-size:17px; width:22px; text-align:center; flex-shrink:0}
+  .lnk small{display:block; font-size:10.5px; color:var(--sub); margin-top:2px}
+  .lnk div{line-height:1.4}
+  .rules{
+    margin-top:12px; padding:10px 12px; border:1px dashed var(--gold-dim); border-radius:8px;
+    font-size:12px; color:var(--sub); line-height:1.9;
+  }
+  .rules b{color:var(--gold); font-weight:normal}
+  .tasks{margin-top:20px}
+  .task-meta{display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--sub); margin-bottom:10px}
+  .bar{height:4px; background:#171226; border-radius:4px; overflow:hidden; margin-bottom:12px}
+  .bar i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--gold-dim),var(--gold)); transition:width .4s}
+  ul#list{list-style:none}
+  #list li{
+    display:flex; align-items:center; gap:10px; padding:9px 6px;
+    border-bottom:1px solid rgba(59,51,85,.55); font-size:14px;
+  }
+  #list li:last-child{border-bottom:none}
+  .chk{
+    width:18px;height:18px; border:1.5px solid var(--gold-dim); border-radius:50%;
+    cursor:pointer; flex-shrink:0; display:flex;align-items:center;justify-content:center;
+    color:transparent; font-size:11px; transition:.15s;
+  }
+  li.done .chk{background:var(--gold); border-color:var(--gold); color:#1b1530}
+  li.done .txt{text-decoration:line-through; opacity:.45}
+  .txt{flex:1}
+  .del{
+    border:none; background:none; color:var(--sub); cursor:pointer; font-size:15px;
+    opacity:0; transition:.15s; font-family:inherit;
+  }
+  #list li:hover .del{opacity:.7}
+  .addrow{display:flex; gap:8px; margin-top:12px}
+  .addrow input{
+    flex:1; background:#171226; border:1px solid var(--frame); border-radius:6px;
+    color:var(--ink); padding:9px 12px; font-family:inherit; font-size:13.5px; outline:none;
+  }
+  .addrow input:focus{border-color:var(--gold-dim)}
+  .addrow button,.cleanup{
+    background:linear-gradient(160deg,#3d3260,#2a2244); color:var(--gold);
+    border:1px solid var(--gold-dim); border-radius:6px; padding:9px 16px;
+    font-family:inherit; font-size:13px; cursor:pointer; letter-spacing:.1em;
+  }
+  .addrow button:hover,.cleanup:hover{filter:brightness(1.2)}
+  .cleanup{margin-top:10px; width:100%; padding:7px; font-size:12px; color:var(--sub)}
+  .say{
+    margin-top:20px; padding:13px 16px; border-left:2px solid var(--gold);
+    background:rgba(141,121,201,.07); border-radius:0 8px 8px 0;
+    font-size:13.5px; line-height:1.8; color:var(--ink);
+  }
+  .say::before{content:"クラリス："; color:var(--gold); letter-spacing:.1em}
+  footer{text-align:center; margin-top:26px; color:var(--sub); font-size:11px; letter-spacing:.3em}
+</style>
+</head>
+<body>
+<div class="room">
+  <header>
+    <h1>クラリスのお部屋</h1>
+    <div id="greet"></div>
+    <div id="clock"></div>
+  </header>
+  <p class="notice">Claude Code（Anthropic製AI）を「専属メイドのクラリス」というキャラクターに見立てて作った、個人制作のウィジェットです。表示している予定・任務はすべてサンプルです。</p>
+
+  <div class="grid">
+    <div class="card portrait-wrap">
+      <div class="frame"><div class="frame-inner">
+        <img id="pic" src="assets/clarisse-portrait.webp" alt="クラリス">
+      </div></div>
+      <div class="nameplate">クラリス<small>CLARISSE — Anthropic Claude</small></div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>期限の砂時計</h2>
+        <div class="cd-grid">
+          <div class="cd hot">
+            <div class="lbl">今月の目標</div>
+            <div class="num" id="cdTen">–<small>日</small></div>
+            <div class="sub">月末まで</div>
+          </div>
+          <div class="cd">
+            <div class="lbl">次回の予定</div>
+            <div class="num" id="cdMen">–<small>日</small></div>
+            <div class="sub">例：来週の面談</div>
+          </div>
+          <div class="cd">
+            <div class="lbl">毎週の習慣</div>
+            <div class="num" id="cdLes">–<small>日</small></div>
+            <div class="sub">毎週金曜 21:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <h2>わたくしへの扉</h2>
+        <div class="links">
+          <a class="lnk" href="live-portrait.html">
+            <span class="ic">🖼</span><div>動く肖像<small>マウス追従・呼吸演出つき</small></div>
+          </a>
+          <a class="lnk" href="3d-model.html">
+            <span class="ic">🌀</span><div>3Dモデル<small>Three.js製・GLB書き出し可</small></div>
+          </a>
+        </div>
+        <div class="rules">
+          <b>覚え書き（サンプル）</b>：期限のあるタスクは前倒しで着手する ／ 送信前は全文を読み直す ／ 迷ったら一度止まって確認する
+        </div>
+      </div>
+
+      <div class="card tasks">
+        <h2>本日の任務</h2>
+        <div class="task-meta"><span id="date"></span><span id="count"></span></div>
+        <div class="bar"><i id="prog"></i></div>
+        <ul id="list"></ul>
+        <div class="addrow">
+          <input id="newtask" placeholder="新しい任務を書き足す…" maxlength="60">
+          <button onclick="addTask()">追加</button>
+        </div>
+        <button class="cleanup" onclick="cleanup()">済んだ任務を片付ける</button>
+      </div>
+
+      <div class="say" id="say"></div>
+    </div>
+  </div>
+
+  <footer>✦ CLARISSE'S CHAMBER ✦</footer>
+</div>
+
+<script>
+const KEY='clarisse_room_demo_v1';
+const DEFAULTS=[
+  {t:'今日のメールに返信する',d:false},
+  {t:'資料の下書きを1本進める',d:false},
+  {t:'読みたかった記事を1本読む',d:false},
+  {t:'デスク周りを軽く片付ける',d:false},
+];
+let tasks=load();
+function load(){
+  try{const s=localStorage.getItem(KEY); if(s) return JSON.parse(s);}catch(e){}
+  return DEFAULTS.map(x=>({...x}));
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(tasks));}catch(e){}}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function render(){
+  const ul=document.getElementById('list');
+  ul.innerHTML=tasks.map((x,i)=>
+    `<li class="${x.d?'done':''}">
+       <span class="chk" onclick="toggle(${i})">✦</span>
+       <span class="txt">${esc(x.t)}</span>
+       <button class="del" onclick="removeTask(${i})" title="削除">✕</button>
+     </li>`).join('') || '<li style="color:#a99fc0;font-size:13px">任務はございませんわ。ごゆるりと。</li>';
+  const done=tasks.filter(x=>x.d).length;
+  document.getElementById('count').textContent=`${done} / ${tasks.length} 完了`;
+  document.getElementById('prog').style.width=(tasks.length?done/tasks.length*100:0)+'%';
+  comment(done);
+  save();
+}
+function toggle(i){tasks[i].d=!tasks[i].d;render();}
+function removeTask(i){tasks.splice(i,1);render();}
+function addTask(){
+  const el=document.getElementById('newtask');
+  const v=el.value.trim(); if(!v)return;
+  tasks.push({t:v,d:false}); el.value=''; render();
+}
+document.getElementById('newtask').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+function cleanup(){tasks=tasks.filter(x=>!x.d);render();}
+function comment(done){
+  const n=tasks.length, el=document.getElementById('say');
+  let m;
+  if(n===0) m='本日の任務はすべて片付きましたのね。お茶をお淹れいたしますわ。';
+  else if(done===0) m='さあ、まいりましょう。一つ目からご一緒いたしますわ、マスター。';
+  else if(done===n) m='まあ……！ 全任務完了ですわ。さすがですわマスター、今日のあなたは完璧ですのよ。';
+  else if(done/n>=0.5) m='半分を越えましたわね。この調子ですわ。無理はなさらず、水分補給もお忘れなく。';
+  else m='順調な滑り出しですわ。焦らず一つずつ、が肝要ですのよ。';
+  el.textContent=' '+m;
+}
+function tick(){
+  const now=new Date(), h=now.getHours();
+  let g;
+  if(h<5) g='こんな時間まで……ご無理は禁物ですわよ、マスター。';
+  else if(h<11) g='おはようございますわ、マスター。今日も素敵な一日にいたしましょう。';
+  else if(h<17) g='ごきげんよう、マスター。午後もお傍でお仕えいたしますわ。';
+  else if(h<22) g='お疲れさまでございますわ、マスター。今宵もようこそ。';
+  else g='夜も更けてまいりましたわ。そろそろお休みの支度を。';
+  document.getElementById('greet').textContent=g;
+  const w=['日','月','火','水','木','金','土'][now.getDay()];
+  document.getElementById('date').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日（${w}）`;
+  document.getElementById('clock').textContent=
+    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+}
+setInterval(tick,1000); tick();
+function daysTo(y,m,d){
+  const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  return Math.round((new Date(y,m-1,d)-t0)/86400000);
+}
+function cdSet(id,days,doneMsg){
+  const el=document.getElementById(id);
+  if(days>0) el.innerHTML=days+'<small>日</small>';
+  else if(days===0) el.innerHTML='<span style="font-size:15px">本日</span>';
+  else el.innerHTML='<span style="font-size:13px">'+doneMsg+'</span>';
+}
+function countdowns(){
+  const now=new Date();
+  const monthEnd=new Date(now.getFullYear(),now.getMonth()+1,0);
+  cdSet('cdTen',daysTo(monthEnd.getFullYear(),monthEnd.getMonth()+1,monthEnd.getDate()),'今月終了');
+  const nextWeek=new Date(now.getTime()+7*86400000);
+  cdSet('cdMen',daysTo(nextWeek.getFullYear(),nextWeek.getMonth()+1,nextWeek.getDate()),'完了');
+  let toFri=(5-now.getDay()+7)%7;
+  if(toFri===0&&now.getHours()>=22) toFri=7;
+  const el=document.getElementById('cdLes');
+  el.innerHTML=toFri===0?'<span style="font-size:15px">本日 21:00</span>':toFri+'<small>日</small>';
+}
+countdowns(); setInterval(countdowns,60000);
+render();
+</script>
+</body>
+</html>

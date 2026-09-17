@@ -26,5 +26,9 @@ icarus-hp/icarus-flight-sprite.png
 _下書き*
 _backup_list_*.csv
 
+# 控え（作業前の原本。公開対象外。誤ってコミットすると原本が公開されます）
+_backup_*/
+
 # 別リポジトリとして管理（副業ポートフォリオとは別物）
-Munder Difflin/
+Maison Neuf/
+hanare-console/

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="クラウドソーシングの案件収集から応募文生成・納品管理までを支援する自作ツール。学び始めの頃に作った初期作品です。表示データはすべて架空です。">
+<title>CW 半自動応募ミッションコントロール（初期作品）</title>
+<style>
+:root{--bg:#0f1420;--card:#1a2233;--line:#2a3550;--tx:#e8ecf4;--sub:#8b96ad;--ac:#4f8ef7;--or:#e07a3f;--ok:#3fb970;--warn:#e6a23c;--ng:#e05656;--pill:#243049}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font-family:"Segoe UI","Hiragino Sans","Meiryo",sans-serif;font-size:14px}
+header{background:#141b2b;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:16px}
+header .tag{font-size:11px;color:var(--sub)}
+.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:14px 20px;background:#121828;border-bottom:1px solid var(--line)}
+.pstat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:center;cursor:pointer}
+.pstat.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.pstat .n{font-size:22px;font-weight:800}
+.pstat .l{font-size:10.5px;color:var(--sub)}
+.flow{display:flex;align-items:center;gap:4px;padding:10px 20px;font-size:11px;color:var(--sub);flex-wrap:wrap}
+.flow .step{padding:4px 12px;border-radius:20px;background:var(--pill)}
+.flow .step.hot{background:var(--or);color:#fff;font-weight:700}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:0;min-height:70vh}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+aside{background:#141b2b;border-right:1px solid var(--line);padding:16px}
+aside h3{font-size:12px;color:var(--sub);margin:14px 0 6px}
+aside h3:first-child{margin-top:0}
+input,select,textarea{width:100%;background:#111827;border:1px solid var(--line);border-radius:8px;color:var(--tx);padding:8px;font-size:13px;font-family:inherit}
+textarea{resize:vertical}
+button{background:var(--ac);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+button:hover{opacity:.88}
+button.ghost{background:var(--pill);color:var(--tx)}
+button.or{background:var(--or)}
+button.ok{background:var(--ok)}
+button.sm{padding:4px 10px;font-size:12px}
+button.danger{background:var(--ng)}
+main{padding:16px 20px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.toolbar .info{font-size:12px;color:var(--sub)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.jcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;position:relative}
+.jcard.sel{border-color:var(--or);box-shadow:0 0 0 1px var(--or)}
+.jcard .t{font-size:13px;font-weight:700;line-height:1.4;margin-bottom:6px;padding-right:26px}
+.jcard .meta{font-size:11px;color:var(--sub);margin-bottom:8px;line-height:1.6}
+.jcard .pay{color:var(--ok);font-weight:700}
+.jcard input[type=checkbox]{position:absolute;top:10px;right:10px;width:18px;height:18px;accent-color:var(--or)}
+.jcard .ops{display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10.5px;background:var(--pill)}
+.st-収集{background:#2a3550}.st-送信待ち{background:#54401a;color:#f0c968}
+.st-応募済{background:#173a5e;color:#7cb8f0}.st-作業中{background:#3a3050;color:#c9b8f0}
+.st-納品完了{background:#245c34;color:#a8f0b8}.st-見送り{background:#4a2020;color:#e09898}
+.queue-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.queue-item .t{font-weight:700;margin-bottom:8px}
+.queue-item textarea{min-height:140px;font-size:12.5px;line-height:1.7}
+.banner{background:#3a2c14;border:1px solid #6b5320;color:#f0c968;border-radius:10px;padding:8px 14px;margin-bottom:12px;font-size:12px}
+.notice{background:#1a2e1f;border:1px solid #2f5c3c;color:#a8f0b8;border-radius:10px;padding:8px 14px;margin-bottom:12px;font-size:12px;line-height:1.7}
+dialog{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:12px;padding:20px;max-width:640px;width:92%}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+label{display:block;font-size:11px;color:var(--sub);margin:8px 0 3px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btnrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.note{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.6}
+.money{color:var(--ok);font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>クラウドワークス <span style="color:var(--or)">半自動応募ミッションコントロール</span></h1>
+  <span class="tag">案件収集 → 選択 → 応募文一括生成 → 送信 → 納品管理　※自動送信はしない設計（CW規約順守）</span>
+</header>
+
+<div class="pipeline" id="pipeline"></div>
+
+<div class="flow" id="flow"></div>
+
+<div class="layout">
+<aside>
+  <h3>■ 案件をまとめて取り込む</h3>
+  <textarea id="bulkIn" rows="6" placeholder="1行1案件で貼り付け：&#10;案件名 | 報酬 | URL&#10;例：&#10;バナー作成5点 | 8000 | https://example.com/...&#10;記事リライト10本 | 20000 |"></textarea>
+  <div class="btnrow"><button class="or" onclick="bulkImport()" style="width:100%">一括取り込み</button></div>
+  <div class="btnrow"><button class="ghost" onclick="clipImport()" style="width:100%">📋 クリップボードから取り込み</button></div>
+  <div class="note">URLだけの行でもOK（1行1件）。重複URLは自動スキップしますわ。</div>
+
+  <h3>■ 絞り込みフィルター</h3>
+  <label>キーワード</label><input id="fKw" oninput="render()" placeholder="例：ライティング / デザイン">
+  <label>最低報酬（円）</label><input id="fMin" type="number" value="0" oninput="render()">
+  <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--tx)"><input type="checkbox" id="fNoBudget" onchange="render()" style="width:16px;height:16px"> 報酬不明の案件を除外</label>
+
+  <h3>■ 応募文テンプレート</h3>
+  <textarea id="gTpl" rows="8"></textarea>
+  <label>アピール実績（{実績}に差し込み）</label>
+  <textarea id="gAppeal" rows="2" placeholder="例：法人向け提案資料の作成やマニュアル整備を担当。生成AIを日常的に活用。"></textarea>
+  <div class="btnrow"><button class="ghost sm" onclick="saveTpl()">テンプレ保存</button></div>
+
+  <h3>■ データ管理</h3>
+  <div class="btnrow">
+    <button class="ghost sm" onclick="exportCSV()">CSV出力</button>
+    <button class="ghost sm" onclick="exportJSON()">バックアップ</button>
+    <button class="ghost sm" onclick="document.getElementById('importFile').click()">読込</button>
+    <button class="ghost sm" onclick="resetDemo()">サンプルに戻す</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>
+</aside>
+
+<main>
+  <div class="notice">これは学び始めの頃に作った初期作品です。表示している案件名・クライアント名はすべて架空のサンプルデータですわ。</div>
+  <div class="banner">⚠ 鉄則：<b>仮払い確認前に作業開始しない</b>／生成した応募文は<b>必ず全文読んで実態とのギャップ確認</b>してから送る</div>
+  <div class="toolbar" id="toolbar"></div>
+  <div id="content"></div>
+</main>
+</div>
+
+<dialog id="manualDlg">
+  <h2 style="margin-bottom:10px;font-size:15px">案件を手動追加</h2>
+  <label>案件名 *</label><input id="mTitle">
+  <div class="row2">
+    <div><label>報酬（円）</label><input id="mPay" type="number"></div>
+    <div><label>応募期限</label><input id="mDue" type="date"></div>
+  </div>
+  <label>URL</label><input id="mUrl" placeholder="https://example.com/...">
+  <label>クライアント名</label><input id="mClient">
+  <label>案件の要点</label><textarea id="mReq" rows="2"></textarea>
+  <div class="btnrow">
+    <button onclick="manualAdd()">追加</button>
+    <button class="ghost" onclick="manualDlg.close()">閉じる</button>
+  </div>
+</dialog>
+
+<dialog id="editDlg">
+  <h2 style="margin-bottom:10px;font-size:15px">案件の編集</h2>
+  <input type="hidden" id="eId">
+  <label>案件名</label><input id="eTitle">
+  <div class="row2">
+    <div><label>ステータス</label><select id="eStatus"></select></div>
+    <div><label>報酬（円）</label><input id="ePay" type="number"></div>
+  </div>
+  <label>応募文の控え</label><textarea id="eApp" rows="5"></textarea>
+  <label>メモ</label><textarea id="eMemo" rows="2"></textarea>
+  <div class="btnrow">
+    <button onclick="saveEdit()">保存</button>
+    <button class="ghost" onclick="editDlg.close()">閉じる</button>
+    <button class="danger" onclick="delJob()">削除</button>
+  </div>
+</dialog>
+
+<script>
+const STAGES=["収集","送信待ち","応募済","作業中","納品完了","見送り"];
+const KEY="cw_demo_v1",TKEY="cw_demo_tpl_v1";
+const SEED=[
+  {id:1,title:"バナー作成5点セット",pay:8000,url:"",client:"サンプル商店",req:"ECサイトのセールバナー",status:"収集",sel:false,app:"",memo:"",created:"2026-07-01",doneDate:""},
+  {id:2,title:"記事リライト10本",pay:20000,url:"",client:"サンプルメディア",req:"SEO記事のリライト",status:"送信待ち",sel:false,app:"はじめまして。サンプルメディアご担当者様\n「記事リライト10本」の募集を拝見し、応募いたしました。",memo:"",created:"2026-07-02",doneDate:""},
+  {id:3,title:"LP用イラスト制作",pay:15000,url:"",client:"合同会社サンプルクリエイト",req:"サービスLPのメインビジュアル",status:"作業中",sel:false,app:"",memo:"納期は2週間後",created:"2026-06-25",doneDate:""},
+  {id:4,title:"アンケート回答（簡易）",pay:1200,url:"",client:"サンプルリサーチ",req:"5分程度の簡易アンケート",status:"納品完了",sel:false,app:"",memo:"",created:"2026-06-18",doneDate:"2026-06-19"}
+];
+let jobs=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(JSON.stringify(SEED));
+let view="収集";
+
+const DEFAULT_TPL=`はじめまして。{クライアント名}ご担当者様
+「{案件名}」の募集を拝見し、応募いたしました。
+
+【自己紹介】
+法人向けの提案・資料作成・顧客対応の経験があり、生成AIを日常的に活用しています。{実績}
+
+【本案件について】
+{要点}
+これまでの経験を活かしてお力になれると考えております。
+
+【お約束できること】
+・期日厳守（進捗は随時ご報告いたします）
+・丁寧なコミュニケーション（原則24時間以内に返信）
+・修正依頼への誠実な対応
+
+まずはお試しの少量からでも構いません。
+ご検討のほど、よろしくお願いいたします。`;
+gTpl.value=localStorage.getItem(TKEY)||DEFAULT_TPL;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(jobs));render();}
+function esc(s){return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function today(){return new Date().toISOString().slice(0,10);}
+function saveTpl(){localStorage.setItem(TKEY,gTpl.value);alert("テンプレートを保存しましたわ");}
+function resetDemo(){if(!confirm("サンプルデータに戻します。編集内容は消えますがよろしいですか？"))return;jobs=JSON.parse(JSON.stringify(SEED));save();}
+
+function parseLines(text){
+  const lines=(text||"").split("\n").map(l=>l.trim()).filter(Boolean);
+  let n=0;
+  lines.forEach(l=>{
+    let title="",pay=0,url="";
+    if(/^https?:\/\/\S+$/.test(l)){
+      url=l;
+      title="案件 "+l.slice(-8);
+    }else{
+      const p=l.split(/\s*[|｜\t]\s*/);
+      title=(p[0]||"").trim();
+      pay=parseInt((p[1]||"").replace(/[^0-9]/g,""))||0;
+      url=(p[2]||"").trim();
+    }
+    if(!title)return;
+    if(url&&jobs.some(j=>j.url===url))return;
+    jobs.push({id:Date.now()+Math.random(),title,pay,url,client:"",req:"",status:"収集",sel:false,app:"",memo:"",created:today(),doneDate:""});
+    n++;
+  });
+  return n;
+}
+function bulkImport(){
+  const n=parseLines(bulkIn.value);
+  bulkIn.value="";save();
+  alert(n+"件を取り込みましたわ（重複URLはスキップ）");
+}
+async function clipImport(){
+  try{
+    const t=await navigator.clipboard.readText();
+    const n=parseLines(t);save();
+    alert(n+"件を取り込みましたわ（重複URLはスキップ）");
+  }catch(e){
+    alert("クリップボードを読めませんでした。左の欄に貼り付けて「一括取り込み」をお使いくださいませ");
+  }
+}
+function openManual(){manualDlg.showModal();}
+function manualAdd(){
+  if(!mTitle.value.trim()){alert("案件名を入れてくださいませ");return;}
+  jobs.push({id:Date.now(),title:mTitle.value.trim(),pay:+mPay.value||0,due:mDue.value,url:mUrl.value.trim(),client:mClient.value.trim(),req:mReq.value.trim(),status:"収集",sel:false,app:"",memo:"",created:today(),doneDate:""});
+  ["mTitle","mPay","mDue","mUrl","mClient","mReq"].forEach(i=>document.getElementById(i).value="");
+  manualDlg.close();save();
+}
+function toggleSel(id){const j=jobs.find(x=>x.id==id);if(j){j.sel=!j.sel;save();}}
+function selAll(v){visible().forEach(j=>j.sel=v);save();}
+function visible(){
+  const kw=(fKw.value||"").toLowerCase(),min=+fMin.value||0,nb=fNoBudget.checked;
+  return jobs.filter(j=>j.status===view)
+    .filter(j=>!kw||j.title.toLowerCase().includes(kw))
+    .filter(j=>j.pay>=min)
+    .filter(j=>!nb||j.pay>0);
+}
+function genSelected(){
+  const sel=jobs.filter(j=>j.status==="収集"&&j.sel);
+  if(!sel.length){alert("案件カードにチェックを入れてから押してくださいませ");return;}
+  const tpl=gTpl.value,ap=gAppeal.value.trim();
+  sel.forEach(j=>{
+    j.app=tpl.replaceAll("{案件名}",j.title).replaceAll("{クライアント名}",j.client||"クライアント").replaceAll("{要点}",j.req||"募集内容を拝見し、").replaceAll("{実績}",ap);
+    j.status="送信待ち";j.sel=false;
+  });
+  view="送信待ち";save();
+}
+function setStatus(id,st){
+  const j=jobs.find(x=>x.id==id);if(!j)return;
+  j.status=st;
+  if(st==="納品完了")j.doneDate=today();
+  save();
+}
+function copyApp(id){
+  const j=jobs.find(x=>x.id==id);if(!j)return;
+  j.app=document.getElementById("qa_"+String(id).replace(".","_")).value;
+  localStorage.setItem(KEY,JSON.stringify(jobs));
+  navigator.clipboard.writeText(j.app).then(()=>alert("コピーしましたわ。応募画面に貼り付けて、全文確認してから送信を！"));
+}
+function openEdit(id){
+  const j=jobs.find(x=>x.id==id);if(!j)return;
+  eId.value=id;eTitle.value=j.title;ePay.value=j.pay;eApp.value=j.app||"";eMemo.value=j.memo||"";
+  eStatus.innerHTML=STAGES.map(s=>`<option ${s===j.status?"selected":""}>${s}</option>`).join("");
+  editDlg.showModal();
+}
+function saveEdit(){
+  const j=jobs.find(x=>x.id==eId.value);if(!j)return;
+  j.title=eTitle.value;j.status=eStatus.value;j.pay=+ePay.value||0;j.app=eApp.value;j.memo=eMemo.value;
+  if(j.status==="納品完了"&&!j.doneDate)j.doneDate=today();
+  editDlg.close();save();
+}
+function delJob(){
+  if(!confirm("削除しますか？"))return;
+  jobs=jobs.filter(x=>x.id!=eId.value);editDlg.close();save();
+}
+function exportCSV(){
+  const head=["案件名","クライアント","報酬","URL","ステータス","応募期限","要点","登録日","完了日","メモ"];
+  const rows=jobs.map(j=>[j.title,j.client,j.pay,j.url,j.status,j.due||"",(j.req||"").replace(/\n/g," "),j.created,j.doneDate,(j.memo||"").replace(/\n/g," ")]);
+  const csv="﻿"+[head,...rows].map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  dl(new Blob([csv],{type:"text/csv"}),`CW応募管理_${today().replaceAll("-","")}.csv`);
+}
+function exportJSON(){dl(new Blob([JSON.stringify(jobs,null,2)],{type:"application/json"}),`CWバックアップ_${today().replaceAll("-","")}.json`);}
+function importJSON(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(Array.isArray(d)){jobs=d;save();alert("読み込みましたわ");}else alert("形式が違います");}catch(e){alert("読み込めませんでした");}};
+  r.readAsText(f);
+}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+
+function render(){
+  const counts={};STAGES.forEach(s=>counts[s]=jobs.filter(j=>j.status===s).length);
+  const earn=jobs.filter(j=>j.status==="納品完了").reduce((s,j)=>s+j.pay,0);
+  document.getElementById("pipeline").innerHTML=STAGES.map(s=>
+    `<div class="pstat ${view===s?"on":""}" onclick="view='${s}';render()"><div class="n">${counts[s]}</div><div class="l">${s}</div></div>`
+  ).join("");
+  const flowSteps=["案件収集","案件選択","応募文生成","送信待ち","応募済み","納品"];
+  const hotIdx=view==="収集"?1:view==="送信待ち"?3:view==="応募済"?4:view==="作業中"||view==="納品完了"?5:0;
+  document.getElementById("flow").innerHTML=flowSteps.map((s,i)=>`<span class="step ${i===hotIdx?"hot":""}">${s}</span>${i<flowSteps.length-1?"→":""}`).join("")+`<span style="margin-left:auto">納品完了の報酬合計：<b class="money">¥${earn.toLocaleString()}</b></span>`;
+  const v=visible();
+  let tb=`<span class="info">${view}：${v.length}件表示</span>`;
+  if(view==="収集"){
+    const selN=jobs.filter(j=>j.status==="収集"&&j.sel).length;
+    tb+=`<button class="ghost sm" onclick="selAll(true)">表示中を全選択</button>
+         <button class="ghost sm" onclick="selAll(false)">選択解除</button>
+         <button class="or" onclick="genSelected()">✉ 一括応募文生成（${selN}件）</button>
+         <button class="ghost sm" onclick="openManual()">＋ 手動で1件追加</button>`;
+  }
+  document.getElementById("toolbar").innerHTML=tb;
+  const c=document.getElementById("content");
+  if(view==="送信待ち"){
+    c.innerHTML=v.map(j=>{
+      const idS=String(j.id).replace(".","_");
+      return `<div class="queue-item">
+        <div class="t">${esc(j.title)} <span class="money">¥${j.pay.toLocaleString()}</span></div>
+        <textarea id="qa_${idS}">${esc(j.app||"")}</textarea>
+        <div class="btnrow">
+          <button class="sm" onclick="copyApp('${j.id}')">📋 応募文をコピー</button>
+          ${j.url?`<button class="ghost sm" onclick="window.open('${esc(j.url)}','_blank')">↗ 案件ページを開く</button>`:""}
+          <button class="ok sm" onclick="setStatus('${j.id}','応募済')">✓ 応募済みにする</button>
+          <button class="ghost sm" onclick="setStatus('${j.id}','見送り')">見送り</button>
+          <button class="ghost sm" onclick="openEdit('${j.id}')">編集</button>
+        </div>
+      </div>`;
+    }).join("")||`<div class="info" style="color:var(--sub)">送信待ちはありませんわ。「収集」タブで案件を選択→一括応募文生成してくださいませ。</div>`;
+  }else{
+    c.innerHTML=`<div class="cards">`+v.map(j=>{
+      const ops=view==="収集"
+        ?`<button class="ghost sm" onclick="openEdit('${j.id}')">編集</button><button class="ghost sm" onclick="setStatus('${j.id}','見送り')">見送り</button>`
+        :view==="応募済"
+        ?`<button class="ok sm" onclick="setStatus('${j.id}','作業中')">仮払い確認→作業開始</button><button class="ghost sm" onclick="setStatus('${j.id}','見送り')">不成立</button><button class="ghost sm" onclick="openEdit('${j.id}')">編集</button>`
+        :view==="作業中"
+        ?`<button class="ok sm" onclick="setStatus('${j.id}','納品完了')">納品完了にする</button><button class="ghost sm" onclick="openEdit('${j.id}')">編集</button>`
+        :`<button class="ghost sm" onclick="openEdit('${j.id}')">編集</button>`;
+      const chk=view==="収集"?`<input type="checkbox" ${j.sel?"checked":""} onchange="toggleSel('${j.id}')">`:"";
+      const link=j.url?` <a href="${esc(j.url)}" target="_blank" style="color:var(--ac);font-size:11px">↗開く</a>`:"";
+      return `<div class="jcard ${j.sel&&view==="収集"?"sel":""}">${chk}
+        <div class="t">${esc(j.title)}</div>
+        <div class="meta"><span class="pay">¥${j.pay.toLocaleString()}</span>${j.due?` ／期限:${j.due}`:""}${j.client?` ／${esc(j.client)}`:""}${link}<br><span class="pill st-${j.status}">${j.status}</span> ${j.created||""}</div>
+        <div class="ops">${ops}</div>
+      </div>`;
+    }).join("")+`</div>`;
+    if(!v.length)c.innerHTML=`<div class="info" style="color:var(--sub)">このステージに案件はありませんわ。</div>`;
+  }
+}
+render();
+</script>
+</body>
+</html>

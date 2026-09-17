@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="転職活動の応募状況を1画面で管理する自作ツール。学び始めの頃に作った初期作品です。表示データはすべて架空です。">
+<title>転職応募管理ツール（初期作品）</title>
+<style>
+:root{--bg:#10141c;--card:#1b2230;--line:#2b3549;--tx:#e9edf5;--sub:#8e99b0;--ac:#e07a3f;--ac2:#4f8ef7;--ok:#3fb970;--ng:#e05656;--pill:#26304a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font-family:"Segoe UI","Hiragino Sans","Meiryo",sans-serif;font-size:14px;padding:20px}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--sub);font-size:12px;margin-bottom:14px}
+.notice{background:#1a2e1f;border:1px solid #2f5c3c;color:#a8f0b8;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12.5px;line-height:1.7}
+.countdown{background:linear-gradient(90deg,#3a2214,#2a1c14);border:1px solid #6b4320;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.countdown .big{font-size:26px;font-weight:800;color:var(--ac)}
+.countdown .t{font-size:12px;color:#d8b090}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.stat .n{font-size:22px;font-weight:700}
+.stat .l{font-size:11px;color:var(--sub)}
+.kanban{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:16px}
+.kcol{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.kcol .kn{font-size:20px;font-weight:700}
+.kcol .kl{font-size:10px;color:var(--sub)}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:16px}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h2{font-size:15px;margin-bottom:12px;border-left:3px solid var(--ac);padding-left:8px}
+label{display:block;font-size:11px;color:var(--sub);margin:8px 0 3px}
+input,select,textarea{width:100%;background:#121826;border:1px solid var(--line);border-radius:8px;color:var(--tx);padding:8px;font-size:13px;font-family:inherit}
+textarea{resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{background:var(--ac);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit}
+button:hover{opacity:.88}
+button.ghost{background:var(--pill);color:var(--tx)}
+button.sm{padding:4px 10px;font-size:12px}
+button.danger{background:var(--ng)}
+.btnrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th{font-size:11px;color:var(--sub);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+tr:hover td{background:#222c44}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;background:var(--pill);white-space:nowrap}
+.st-気になる{background:#2b3549}.st-応募準備{background:#3a3050;color:#c9b8f0}
+.st-応募済{background:#173a5e;color:#7cb8f0}.st-書類選考{background:#1a3a52;color:#7fc8e0}
+.st-一次面接{background:#54401a;color:#f0c968}.st-二次面接{background:#5c4210;color:#f0d080}
+.st-最終面接{background:#5e3410;color:#f0a868}.st-内定{background:#245c34;color:#a8f0b8}
+.st-見送り{background:#4a2020;color:#e09898}.st-辞退{background:#3a3a3a;color:#b8b8b8}
+.filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.filter button{background:var(--pill);font-size:12px;padding:5px 12px}
+.filter button.on{background:var(--ac)}
+.duewarn{color:var(--ng);font-weight:700}
+.duesoon{color:#e6a23c;font-weight:600}
+dialog{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:12px;padding:20px;max-width:680px;width:94%}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+details summary{cursor:pointer;font-size:13px;color:var(--sub);margin:6px 0}
+.next-actions{margin-top:8px}
+.na-item{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;background:#121826;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:12.5px}
+</style>
+</head>
+<body>
+<h1>転職応募管理ツール</h1>
+<div class="sub">応募の進捗・次アクションを一元管理する自作ツール　※データはこのブラウザに保存されます（このページのものは初期サンプルです）</div>
+<div class="notice">これは学び始めの頃に作った初期作品です。表示している企業名・数値はすべて架空のサンプルデータですわ。</div>
+
+<div class="countdown">
+  <div><div class="big" id="cdDays">--</div><div class="t">目標日まで（残り日数）</div></div>
+  <div style="flex:1;font-size:13px;color:#e8c8a8">応募→面接→内定までを逆算して、書類応募の山をいつまでに作るかを可視化する仕組みですわ。</div>
+</div>
+
+<div class="dash">
+  <div class="stat"><div class="n" id="stTotal">0</div><div class="l">総応募数</div></div>
+  <div class="stat"><div class="n" id="stActive">0</div><div class="l">選考中</div></div>
+  <div class="stat"><div class="n" id="stInterview">0</div><div class="l">面接フェーズ</div></div>
+  <div class="stat"><div class="n" id="stOffer" style="color:var(--ok)">0</div><div class="l">内定</div></div>
+  <div class="stat"><div class="n" id="stPassRate">0%</div><div class="l">書類通過率</div></div>
+  <div class="stat"><div class="n" id="stWeek">0</div><div class="l">今週の応募数</div></div>
+</div>
+
+<div class="kanban" id="kanban"></div>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <h2>応募を登録</h2>
+      <label>企業名 *</label><input id="fCompany" placeholder="株式会社○○">
+      <label>職種・求人名</label><input id="fRole" placeholder="例：Webディレクター／カスタマーサクセス など">
+      <div class="row2">
+        <div><label>経由サイト</label><select id="fVia"><option>doda</option><option>リクルートエージェント</option><option>リクナビNEXT</option><option>ミイダス</option><option>ビズリーチ</option><option>Green</option><option>Wantedly</option><option>その他</option></select></div>
+        <div><label>応募日</label><input id="fDate" type="date"></div>
+      </div>
+      <div class="row2">
+        <div><label>想定年収</label><input id="fSalary" placeholder="例：450万〜"></div>
+        <div><label>勤務形態</label><select id="fWork"><option>フルリモート</option><option>リモート中心</option><option>ハイブリッド</option><option>出社</option><option>不明</option></select></div>
+      </div>
+      <label>志望度</label><select id="fWish"><option>★★★ 本命</option><option>★★ 有力</option><option>★ 持ち駒</option></select>
+      <label>メモ（求人の魅力・懸念）</label><textarea id="fMemo" rows="2"></textarea>
+      <div class="btnrow"><button onclick="addApp()">登録する</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>応募一覧</h2>
+    <div class="filter" id="filters"></div>
+    <table>
+      <thead><tr><th>企業</th><th>職種</th><th>経由</th><th>志望度</th><th>ステータス</th><th>次アクション／期限</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="next-actions">
+      <details open><summary>⏰ 期限が近い次アクション（3日以内）</summary><div id="naList"></div></details>
+    </div>
+    <div class="btnrow">
+      <button class="ghost" onclick="exportCSV()">CSVエクスポート</button>
+      <button class="ghost" onclick="exportJSON()">バックアップ保存(JSON)</button>
+      <button class="ghost" onclick="document.getElementById('importFile').click()">バックアップ読込</button>
+      <button class="ghost" onclick="resetDemo()">サンプルデータに戻す</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+  </div>
+</div>
+
+<dialog id="editDlg">
+  <h2 style="margin-bottom:12px">応募の編集</h2>
+  <input type="hidden" id="eId">
+  <div class="row2">
+    <div><label>企業名</label><input id="eCompany"></div>
+    <div><label>職種</label><input id="eRole"></div>
+  </div>
+  <div class="row2">
+    <div><label>ステータス</label><select id="eStatus"></select></div>
+    <div><label>志望度</label><select id="eWish"><option>★★★ 本命</option><option>★★ 有力</option><option>★ 持ち駒</option></select></div>
+  </div>
+  <div class="row2">
+    <div><label>次アクション</label><input id="eNext" placeholder="例：一次面接の日程調整を返信"></div>
+    <div><label>期限</label><input id="eDue" type="date"></div>
+  </div>
+  <label>メモ</label><textarea id="eMemo" rows="2"></textarea>
+  <div class="btnrow">
+    <button onclick="saveEdit()">保存</button>
+    <button class="ghost" onclick="document.getElementById('editDlg').close()">閉じる</button>
+    <button class="danger" onclick="delApp()">削除</button>
+  </div>
+</dialog>
+
+<script>
+const STATUSES=["気になる","応募準備","応募済","書類選考","一次面接","二次面接","最終面接","内定","見送り","辞退"];
+const KEY="tenshoku_demo_v1";
+const SEED=[
+  {id:1,company:"株式会社サンプルワークス",role:"Webディレクター",via:"Green",date:"2026-07-02",salary:"420万〜",work:"リモート中心",wish:"★★★ 本命",memo:"自社サービスの成長期。裁量が大きそう",status:"一次面接",next:"想定質問の整理",due:"2026-07-20",intMemo:""},
+  {id:2,company:"合同会社サンプルデザイン",role:"カスタマーサクセス",via:"Wantedly",date:"2026-06-28",salary:"380万〜",work:"ハイブリッド",wish:"★★ 有力",memo:"既存事業。安定重視",status:"書類選考",next:"結果待ち",due:"",intMemo:""},
+  {id:3,company:"株式会社テストソリューションズ",role:"営業（法人向け）",via:"doda",date:"2026-07-05",salary:"400万〜500万",work:"出社",wish:"★ 持ち駒",memo:"",status:"気になる",next:"",due:"",intMemo:""}
+];
+let apps=JSON.parse(localStorage.getItem(KEY)||"null")||JSON.parse(JSON.stringify(SEED));
+let filterSt="すべて";
+
+function save(){localStorage.setItem(KEY,JSON.stringify(apps));render();}
+function esc(s){return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function today(){return new Date().toISOString().slice(0,10);}
+function resetDemo(){if(!confirm("サンプルデータに戻します。編集内容は消えますがよろしいですか？"))return;apps=JSON.parse(JSON.stringify(SEED));save();}
+
+function addApp(){
+  const c=document.getElementById("fCompany").value.trim();
+  if(!c){alert("企業名を入れてくださいませ");return;}
+  apps.push({id:Date.now(),company:c,role:fRole.value.trim(),via:fVia.value,date:fDate.value||today(),salary:fSalary.value.trim(),work:fWork.value,wish:fWish.value,memo:fMemo.value.trim(),status:"気になる",next:"",due:"",intMemo:""});
+  ["fCompany","fRole","fSalary","fMemo"].forEach(i=>document.getElementById(i).value="");
+  save();
+}
+function openEdit(id){
+  const a=apps.find(x=>x.id===id);if(!a)return;
+  eId.value=id;eCompany.value=a.company;eRole.value=a.role;eNext.value=a.next||"";eDue.value=a.due||"";eMemo.value=a.memo||"";eWish.value=a.wish||"★ 持ち駒";
+  document.getElementById("eStatus").innerHTML=STATUSES.map(s=>`<option ${s===a.status?"selected":""}>${s}</option>`).join("");
+  document.getElementById("editDlg").showModal();
+}
+function saveEdit(){
+  const a=apps.find(x=>x.id===+eId.value);if(!a)return;
+  a.company=eCompany.value;a.role=eRole.value;a.status=eStatus.value;a.wish=eWish.value;a.next=eNext.value;a.due=eDue.value;a.memo=eMemo.value;
+  document.getElementById("editDlg").close();save();
+}
+function delApp(){
+  if(!confirm("削除しますか？"))return;
+  apps=apps.filter(x=>x.id!==+eId.value);
+  document.getElementById("editDlg").close();save();
+}
+function exportCSV(){
+  const head=["企業名","職種","経由","応募日","想定年収","勤務形態","志望度","ステータス","次アクション","期限","メモ"];
+  const rows=apps.map(a=>[a.company,a.role,a.via,a.date,a.salary,a.work,a.wish,a.status,a.next,a.due,(a.memo||"").replace(/\n/g," ")]);
+  const csv="﻿"+[head,...rows].map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  dl(new Blob([csv],{type:"text/csv"}),`転職応募管理_${today().replaceAll("-","")}.csv`);
+}
+function exportJSON(){dl(new Blob([JSON.stringify(apps,null,2)],{type:"application/json"}),`転職応募バックアップ_${today().replaceAll("-","")}.json`);}
+function importJSON(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(Array.isArray(d)){apps=d;save();alert("読み込みましたわ");}else alert("形式が違います");}catch(e){alert("読み込めませんでした");}};
+  r.readAsText(f);
+}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+
+function render(){
+  const goal=new Date(Date.now()+30*86400000);
+  const diff=Math.ceil((goal-new Date())/86400000);
+  document.getElementById("cdDays").textContent=diff+"日";
+  const activeSt=["応募済","書類選考","一次面接","二次面接","最終面接"];
+  const intSt=["一次面接","二次面接","最終面接"];
+  const applied=apps.filter(a=>!["気になる","応募準備"].includes(a.status));
+  const passed=apps.filter(a=>["一次面接","二次面接","最終面接","内定"].includes(a.status));
+  stTotal.textContent=applied.length;
+  stActive.textContent=apps.filter(a=>activeSt.includes(a.status)).length;
+  stInterview.textContent=apps.filter(a=>intSt.includes(a.status)).length;
+  stOffer.textContent=apps.filter(a=>a.status==="内定").length;
+  stPassRate.textContent=applied.length?Math.round(passed.length/applied.length*100)+"%":"0%";
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+  stWeek.textContent=apps.filter(a=>a.date>=weekAgo&&!["気になる","応募準備"].includes(a.status)).length;
+  document.getElementById("kanban").innerHTML=STATUSES.map(s=>{
+    const n=apps.filter(a=>a.status===s).length;
+    return `<div class="kcol"><div class="kn">${n}</div><div class="kl"><span class="pill st-${s}">${s}</span></div></div>`;
+  }).join("");
+  document.getElementById("filters").innerHTML=["すべて",...STATUSES].map(s=>`<button class="${s===filterSt?"on":""}" onclick="filterSt='${s}';render()">${s}</button>`).join("");
+  const now=today();
+  const soon=new Date(Date.now()+3*86400000).toISOString().slice(0,10);
+  const list=apps.filter(a=>filterSt==="すべて"||a.status===filterSt).sort((a,b)=>b.id-a.id);
+  document.getElementById("tbody").innerHTML=list.map(a=>{
+    let dueCls="";
+    if(a.due&&!["内定","見送り","辞退"].includes(a.status)){
+      if(a.due<now)dueCls="duewarn";else if(a.due<=soon)dueCls="duesoon";
+    }
+    const nx=a.next?`${esc(a.next)}${a.due?`<br><span class="${dueCls}">期限:${a.due}</span>`:""}`:"-";
+    return `<tr><td><b>${esc(a.company)}</b></td><td>${esc(a.role)}</td><td style="font-size:11px;color:var(--sub)">${esc(a.via)}</td><td>${(a.wish||"").split(" ")[0]}</td><td><span class="pill st-${a.status}">${a.status}</span></td><td style="font-size:12px">${nx}</td><td><button class="sm ghost" onclick="openEdit(${a.id})">編集</button></td></tr>`;
+  }).join("")||`<tr><td colspan="7" style="color:var(--sub)">まだ応募がありません。左のフォームから登録してくださいませ。</td></tr>`;
+  const nas=apps.filter(a=>a.next&&a.due&&a.due<=soon&&!["内定","見送り","辞退"].includes(a.status)).sort((x,y)=>x.due<y.due?-1:1);
+  document.getElementById("naList").innerHTML=nas.map(a=>`<div class="na-item"><span><b>${esc(a.company)}</b>：${esc(a.next)}</span><span class="${a.due<now?"duewarn":"duesoon"}">${a.due}</span></div>`).join("")||`<div style="color:var(--sub);font-size:12px;padding:6px">3日以内の期限はありませんわ。</div>`;
+}
+render();
+</script>
+</body>
+</html>

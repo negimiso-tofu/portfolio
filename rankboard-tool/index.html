@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="転職活動の応募先をランク・スコアで一覧管理する自作ツール。学び始めの頃に作った初期作品です。表示している企業名・人物名はすべて架空です。">
+<title>転職ランクボード（初期作品）</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#fff; --ink:#1f2733; --sub:#6b7684; --line:#e3e8ef;
+    --s:#c9184a; --a:#e85d04; --b:#0077b6; --c:#6c757d; --x:#adb5bd; --u:#7b2cbf;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Yu Gothic UI","Meiryo",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+  header{background:#1e2a3a;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header h1{font-size:17px;margin:0}
+  header .sub{font-size:12px;opacity:.75}
+  .toolbar{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px}
+  button:hover{background:#eef2f7}
+  header button{background:#33465e;color:#fff;border-color:#4a5f79}
+  header button:hover{background:#41587a}
+  .wrap{max-width:1280px;margin:0 auto;padding:16px 20px 60px}
+  .notice{background:#eaf7ee;border:1px solid #b7e0c2;color:#1e6b34;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:12.5px;line-height:1.7}
+  .cards{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .cardx{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 16px;min-width:130px}
+  .cardx .n{font-size:22px;font-weight:700}
+  .cardx .t{font-size:12px;color:var(--sub)}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tabs button{border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px}
+  .tabs button.on{background:#1e2a3a;color:#fff;border-color:#1e2a3a}
+  .panel{display:none}
+  .panel.on{display:block}
+  .filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .chip{padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12.5px;user-select:none}
+  .chip.on{color:#fff}
+  .chip[data-rank="S"].on{background:var(--s);border-color:var(--s)}
+  .chip[data-rank="A"].on{background:var(--a);border-color:var(--a)}
+  .chip[data-rank="B"].on{background:var(--b);border-color:var(--b)}
+  .chip[data-rank="C"].on{background:var(--c);border-color:var(--c)}
+  .chip[data-rank="未"].on{background:var(--u);border-color:var(--u)}
+  .chip[data-rank="終"].on{background:var(--x);border-color:var(--x)}
+  #q{padding:6px 10px;border:1px solid var(--line);border-radius:6px;min-width:220px}
+  .tblwrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px}
+  table{border-collapse:collapse;width:100%;min-width:1100px}
+  th{position:sticky;top:0;background:#f0f3f8;font-size:12px;color:var(--sub);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:hover td{background:#f8fafc}
+  .badge{display:inline-block;color:#fff;border-radius:6px;padding:2px 9px;font-weight:700;font-size:12px}
+  .badge.S{background:var(--s)} .badge.A{background:var(--a)} .badge.B{background:var(--b)}
+  .badge.C{background:var(--c)} .badge.終{background:var(--x)} .badge.未{background:var(--u)}
+  td.score{font-weight:700;font-size:15px;text-align:center}
+  td.name{font-weight:700;white-space:nowrap}
+  td.memo,td.next{max-width:280px}
+  .due{white-space:nowrap;font-weight:600}
+  .due.hot{color:#d00000}
+  .due.warn{color:#e85d04}
+  .warnmark{color:#d00000;font-weight:700}
+  .hint{color:var(--sub);font-size:12px;margin:8px 2px}
+  .day{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  .day h3{margin:0;padding:8px 14px;background:#f0f3f8;font-size:13.5px;border-bottom:1px solid var(--line)}
+  .day.today h3{background:#fff3cd}
+  .ev{display:flex;gap:12px;padding:7px 14px;border-bottom:1px dashed var(--line);align-items:center}
+  .ev:last-child{border-bottom:none}
+  .ev .tm{font-weight:700;min-width:88px}
+  .ev .del{margin-left:auto;border:none;background:none;color:#c0392b;cursor:pointer;font-size:12px}
+  .addev{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+  .addev input{padding:6px 8px;border:1px solid var(--line);border-radius:6px}
+  .task{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 14px;margin-bottom:7px}
+  .task .d{min-width:120px;font-weight:700}
+  footer{color:var(--sub);font-size:12px;text-align:center;padding:20px}
+  @media(max-width:700px){ .cardx{min-width:44%} }
+</style>
+</head>
+<body>
+<header>
+  <h1>🗂 転職ランクボード</h1>
+  <span class="sub" id="updated"></span>
+  <div class="toolbar">
+    <button onclick="doImport()">📥 CSV取込</button>
+    <button onclick="doExport()">📤 CSV書き出し</button>
+    <button onclick="resetData()">↺ 初期データに戻す</button>
+  </div>
+</header>
+<div class="wrap">
+  <div class="notice">これは学び始めの頃に作った初期作品です。表示している企業名・人物名・数値はすべて架空のサンプルデータですわ。</div>
+  <div class="cards" id="cards"></div>
+  <div class="tabs">
+    <button class="on" data-p="p1">📊 ランク表</button>
+    <button data-p="p2">📅 面接カレンダー</button>
+    <button data-p="p3">⏰ 締切タスク</button>
+  </div>
+
+  <div class="panel on" id="p1">
+    <div class="filters">
+      <span class="chip on" data-rank="S">S 本命</span>
+      <span class="chip on" data-rank="A">A 有力</span>
+      <span class="chip on" data-rank="B">B 持ち駒</span>
+      <span class="chip on" data-rank="C">C 低優先</span>
+      <span class="chip on" data-rank="未">未調査</span>
+      <span class="chip" data-rank="終">終了</span>
+      <input id="q" placeholder="🔎 企業名・メモで検索" oninput="render()">
+    </div>
+    <div class="tblwrap">
+      <table id="tbl">
+        <thead><tr>
+          <th>ランク</th><th>企業名</th><th>点</th><th>職種</th><th>経由</th>
+          <th>ステータス</th><th>次アクション</th><th>期限</th><th>メモ</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="hint">✏️ セルはダブルクリックで直接編集できます（自動保存）。</p>
+  </div>
+
+  <div class="panel" id="p2">
+    <div class="addev">
+      <input type="date" id="evd"><input type="time" id="evt"><input id="evn" placeholder="予定名（例：○○社 一次面接）" size="30">
+      <button onclick="addEv()">＋追加</button>
+    </div>
+    <div id="cal"></div>
+  </div>
+
+  <div class="panel" id="p3">
+    <div id="tasks"></div>
+    <p class="hint">ランク表の「期限」列から自動生成しています。期限を編集すればここも変わりますわ。</p>
+  </div>
+</div>
+<footer>制作：ねぎみそとうふ／データはこの端末のブラウザ内（localStorage）にのみ保存されます</footer>
+
+<script>
+const LSKEY="rankboard_demo_v1", LSEV="rankboard_demo_ev_v1", LSUP="rankboard_demo_up_v1";
+// ---------- サンプルデータ（すべて架空） ----------
+const SEED=[
+ {r:"S",n:"株式会社サンプルワークス",s:95,j:"事業開発セールス",v:"エージェントA",st:"一次面接（確定）",nx:"準備メモの作成・質問リスト整理",d:"2026-07-27",m:"成長期のSaaS企業。裁量が大きそうで本命筆頭"},
+ {r:"S",n:"合同会社テストフィールド",s:78,j:"ソリューション営業",v:"エージェントB（担当：山田氏）",st:"紹介面談（確定）",nx:"面談用の資料を確認",d:"2026-07-21",m:"業界経験と直結するポジション。最優先枠"},
+ {r:"S",n:"株式会社デモウェルス",s:78,j:"フィールドセールス",v:"転職サイトC",st:"適性検査 受験待ち",nx:"検査を受験→結果を確認",d:"2026-07-22",m:"募集条件が希望と近く、軸に合う"},
+ {r:"A",n:"株式会社ひなたエンジン",s:85,j:"",v:"エージェントA",st:"適性検査 完了",nx:"結果待ち",d:"",m:"受検完了・報告済み"},
+ {r:"A",n:"フィクションパートナーズ株式会社",s:85,j:"",v:"エージェントA",st:"日程調整中",nx:"確定待ち。事前適性の案内に注意",d:"",m:"事前適性あり"},
+ {r:"A",n:"株式会社そらまめラボ",s:82.5,j:"DX支援営業",v:"エージェントA",st:"一次面接 実施済",nx:"結果待ち・お礼メール送付",d:"",m:"面接の手応えは良好"},
+ {r:"A",n:"株式会社ミライズ",s:82.5,j:"IT法人営業",v:"エージェントA",st:"一次面接（確定）",nx:"準備を進める",d:"2026-07-29",m:"想定質問を整理中"},
+ {r:"A",n:"株式会社カラフルワークス",s:78,j:"プリセールス／CS",v:"エージェントA",st:"一次 日程調整",nx:"マイページで日程回答",d:"2026-07-22",m:"募集職種と経験のマッチ度が高い"},
+ {r:"A",n:"サンプル合同会社",s:78,j:"カスタマーサクセス",v:"転職サイトD",st:"書類選考",nx:"結果待ち",d:"",m:"週4リモート可"},
+ {r:"A",n:"株式会社ノベルテック",s:77,j:"営業",v:"転職サイトC",st:"一次面接（確定）",nx:"準備を進める",d:"2026-07-23",m:"業界シェア上位。安定感あり"},
+ {r:"B",n:"株式会社れいめいシステムズ",s:78,j:"開発／PM系",v:"転職サイトC",st:"面接 日程調整",nx:"日程回答",d:"2026-07-20",m:"開発寄りのポジション。学びの幅は広そう"},
+ {r:"B",n:"サンプル・コンサルティング株式会社",s:73,j:"マーケソリューション営業",v:"転職サイトD",st:"書類選考",nx:"結果待ち",d:"",m:"上場グループの安定枠"},
+ {r:"B",n:"株式会社エデュケーションギア",s:72,j:"営業／CS",v:"エージェントA",st:"書類選考",nx:"結果待ち",d:"",m:"教育系SaaS。条件面は要確認"},
+ {r:"B",n:"株式会社アークプランニング",s:70,j:"アカウントプランナー",v:"転職サイトD",st:"書類選考",nx:"結果待ち",d:"",m:"倍率は高め"},
+ {r:"B",n:"サンプルヒューテック株式会社",s:70,j:"社内SE／DX開発",v:"転職サイトC",st:"日程調整",nx:"日程回答・年収レンジ確認",d:"",m:"新設のDX部門"},
+ {r:"C",n:"株式会社ダミーソリューションズ",s:68,j:"",v:"エージェントA",st:"日程調整（見送り寄り）",nx:"受けるか判断",d:"2026-07-21",m:"労務面の情報を要確認"},
+ {r:"C",n:"プレイスホルダー株式会社",s:62,j:"セールスPM",v:"転職サイトD",st:"書類選考",nx:"通過時は条件確認",d:"",m:"現場配属の可能性あり"},
+ {r:"C",n:"株式会社サンプルイノベーション",s:60,j:"法人営業",v:"エージェントA",st:"日程再調整中",nx:"候補日で回答待ち",d:"",m:""},
+ {r:"未",n:"株式会社アーキタイプ",s:null,j:"",v:"転職サイトC",st:"AI面接＋適性 受験待ち",nx:"受験→結果確認",d:"2026-07-22",m:""},
+ {r:"未",n:"サンプルHR株式会社",s:null,j:"",v:"転職サイトC",st:"性格検査 受験待ち",nx:"受験",d:"2026-07-21",m:""},
+ {r:"未",n:"株式会社モックアップ",s:null,j:"カスタマーサポート",v:"転職サイトC",st:"応募済",nx:"結果待ち",d:"",m:"フルリモート"},
+ {r:"終",n:"株式会社テンプレート商事",s:97.5,j:"",v:"転職サイトD",st:"落選",nx:"",d:"",m:"最有力だったが縁がなかった"},
+ {r:"終",n:"株式会社架空フーズ",s:null,j:"",v:"エージェントA",st:"辞退済",nx:"",d:"",m:""}
+];
+const SEEDEV=[
+ {d:"2026-07-21",t:"12:00",n:"サンプルワークス系 一次面接（Web）"},
+ {d:"2026-07-21",t:"14:00",n:"テストフィールド 紹介面談"},
+ {d:"2026-07-22",t:"11:00",n:"カラフルワークス 一次面接"},
+ {d:"2026-07-23",t:"13:00",n:"ノベルテック 一次面接（Web）"},
+ {d:"2026-07-27",t:"14:00",n:"サンプルワークス 一次面接（本命）"},
+ {d:"2026-07-29",t:"11:00",n:"ミライズ 一次面接"}
+];
+// ---------- state ----------
+let rows = load(LSKEY, SEED), evs = load(LSEV, SEEDEV);
+function load(k,seed){ try{const v=JSON.parse(localStorage.getItem(k)); return Array.isArray(v)&&v.length?v:JSON.parse(JSON.stringify(seed));}catch(e){return JSON.parse(JSON.stringify(seed));} }
+function save(){ localStorage.setItem(LSKEY,JSON.stringify(rows)); localStorage.setItem(LSEV,JSON.stringify(evs)); localStorage.setItem(LSUP,new Date().toLocaleString("ja-JP")); stamp(); }
+function stamp(){ document.getElementById("updated").textContent="最終更新："+(localStorage.getItem(LSUP)||"サンプルデータ"); }
+function resetData(){ if(!confirm("サンプルデータに戻します。編集内容は消えますがよろしいですか？"))return; rows=JSON.parse(JSON.stringify(SEED)); evs=JSON.parse(JSON.stringify(SEEDEV)); save(); render(); renderCal(); renderTasks(); }
+const ORDER={S:0,A:1,B:2,C:3,"未":4,"終":5};
+function activeRanks(){ return [...document.querySelectorAll(".chip.on")].map(c=>c.dataset.rank); }
+function dueClass(d){ if(!d)return""; const t=new Date(d+"T23:59:59")-Date.now(); if(t<0)return"hot"; const days=t/864e5; return days<=1?"hot":days<=3?"warn":""; }
+function fmtDue(d){ if(!d)return""; const dt=new Date(d); if(isNaN(dt))return d; const w="日月火水木金土"[dt.getDay()]; return `${dt.getMonth()+1}/${dt.getDate()}(${w})`; }
+function render(){
+  const q=(document.getElementById("q").value||"").toLowerCase(), ranks=activeRanks();
+  const tb=document.querySelector("#tbl tbody"); tb.innerHTML="";
+  const list=rows.filter(r=>ranks.includes(r.r)).filter(r=>!q||(r.n+r.m+r.st+r.nx+(r.j||"")).toLowerCase().includes(q))
+    .sort((a,b)=>ORDER[a.r]-ORDER[b.r]||(b.s??-1)-(a.s??-1));
+  for(const r of list){
+    const tr=document.createElement("tr"); const idx=rows.indexOf(r);
+    tr.innerHTML=`<td><span class="badge ${r.r}">${r.r==="未"?"未調査":r.r==="終"?"終了":r.r}</span></td>
+      <td class="name" data-f="n">${esc(r.n)}</td>
+      <td class="score" data-f="s">${r.s??"—"}</td>
+      <td data-f="j">${esc(r.j||"")}</td><td data-f="v">${esc(r.v||"")}</td>
+      <td data-f="st">${esc(r.st||"")}</td><td class="next" data-f="nx">${esc(r.nx||"")}</td>
+      <td class="due ${dueClass(r.d)}" data-f="d" data-raw="${esc(r.d||"")}">${fmtDue(r.d)}</td>
+      <td class="memo" data-f="m">${warn(esc(r.m||""))}</td>`;
+    tr.querySelectorAll("td[data-f]").forEach(td=>{
+      td.ondblclick=()=>{ td.contentEditable=true; if(td.dataset.f==="d")td.textContent=td.dataset.raw||""; td.focus(); };
+      td.onblur=()=>{ if(td.contentEditable!=="true")return; td.contentEditable=false;
+        let v=td.textContent.trim(); const f=td.dataset.f;
+        if(f==="s"){ rows[idx][f]=v===""||v==="—"?null:parseFloat(v); } else rows[idx][f]=v;
+        save(); render(); renderTasks(); };
+    });
+    tb.appendChild(tr);
+  }
+  const c=r=>rows.filter(x=>x.r===r).length;
+  const conf=rows.filter(x=>/確定/.test(x.st)).length;
+  const week=rows.filter(x=>x.d&&dueClass(x.d)!=="").length;
+  document.getElementById("cards").innerHTML=
+    card(c("S"),"S 本命","var(--s)")+card(c("A"),"A 有力","var(--a)")+card(c("B"),"B 持ち駒","var(--b)")+
+    card(c("C"),"C 低優先","var(--c)")+card(conf,"確定面接","#1e2a3a")+card(week,"期限3日以内","#d00000");
+}
+function card(n,t,col){return `<div class="cardx"><div class="n" style="color:${col}">${n}</div><div class="t">${t}</div></div>`;}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function warn(s){return s.replace(/(⚠️|🚨)/g,'<span class="warnmark">$1</span>');}
+function renderCal(){
+  const box=document.getElementById("cal"); box.innerHTML="";
+  const map={}; evs.forEach(e=>{(map[e.d]=map[e.d]||[]).push(e)});
+  const today=new Date().toISOString().slice(0,10);
+  Object.keys(map).sort().forEach(d=>{
+    const dt=new Date(d), w="日月火水木金土"[dt.getDay()];
+    const div=document.createElement("div"); div.className="day"+(d===today?" today":"");
+    div.innerHTML=`<h3>${dt.getMonth()+1}/${dt.getDate()}（${w}）${d===today?"　← 今日":""}</h3>`;
+    map[d].sort((a,b)=>a.t.localeCompare(b.t)).forEach(e=>{
+      const row=document.createElement("div"); row.className="ev";
+      row.innerHTML=`<span class="tm">${e.t}</span><span>${esc(e.n)}</span><button class="del">削除</button>`;
+      row.querySelector(".del").onclick=()=>{ if(!confirm(`「${e.n}」を削除しますか？`))return; evs.splice(evs.indexOf(e),1); save(); renderCal(); };
+      div.appendChild(row);
+    });
+    box.appendChild(div);
+  });
+  if(!box.children.length) box.innerHTML='<p class="hint">予定はありません</p>';
+}
+function addEv(){
+  const d=document.getElementById("evd").value,t=document.getElementById("evt").value,n=document.getElementById("evn").value.trim();
+  if(!d||!n){alert("日付と予定名を入れてくださいまし");return;}
+  evs.push({d,t:t||"00:00",n}); save(); renderCal(); document.getElementById("evn").value="";
+}
+function renderTasks(){
+  const box=document.getElementById("tasks"); box.innerHTML="";
+  rows.filter(r=>r.d&&r.r!=="終").sort((a,b)=>a.d.localeCompare(b.d)).forEach(r=>{
+    const div=document.createElement("div"); div.className="task";
+    div.innerHTML=`<span class="d due ${dueClass(r.d)}">${fmtDue(r.d)}</span>
+      <span class="badge ${r.r}">${r.r==="未"?"未調査":r.r}</span>
+      <b>${esc(r.n)}</b><span>${esc(r.nx||r.st)}</span>`;
+    box.appendChild(div);
+  });
+  if(!box.children.length) box.innerHTML='<p class="hint">期限つきタスクはありません</p>';
+}
+function parseCSV(text){
+  const out=[]; let row=[],cur="",inq=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(inq){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inq=false; } else cur+=c; }
+    else if(c==='"')inq=true;
+    else if(c===","){row.push(cur);cur="";}
+    else if(c==="\n"||c==="\r"){ if(c==="\r"&&text[i+1]==="\n")i++; row.push(cur);cur=""; if(row.some(x=>x!==""))out.push(row); row=[]; }
+    else cur+=c;
+  }
+  if(cur!==""||row.length){row.push(cur); if(row.some(x=>x!==""))out.push(row);}
+  return out;
+}
+const COLMAP={"企業名":"n","会社名":"n","職種":"j","経由":"v","ステータス":"st","進捗":"st","次アクション":"nx","期限":"d","締切":"d","メモ":"m","備考":"m","志望度":"w","想定年収":"y","ランク":"r","スコア":"s","点":"s"};
+function doImport(){
+  const inp=document.createElement("input"); inp.type="file"; inp.accept=".csv,.txt";
+  inp.onchange=async()=>{ const f=inp.files[0]; if(!f)return;
+    let text=await f.text(); if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+    const rowsCsv=parseCSV(text); if(rowsCsv.length<2){alert("データ行がありません");return;}
+    const head=rowsCsv[0].map(h=>COLMAP[h.trim()]||null);
+    let upd=0,add=0;
+    for(let i=1;i<rowsCsv.length;i++){
+      const rec={}; rowsCsv[i].forEach((v,ci)=>{ if(head[ci])rec[head[ci]]=v.trim(); });
+      if(!rec.n)continue;
+      if(rec.y){ rec.m=(rec.m?rec.m+"／":"")+"想定年収:"+rec.y; delete rec.y; }
+      const norm=s=>s.replace(/[\s　]/g,"").replace(/株式会社|合同会社/g,"");
+      let hit=rows.find(r=>norm(r.n)===norm(rec.n)&&(!rec.j||!r.j||r.j===rec.j)) || rows.find(r=>norm(r.n)===norm(rec.n));
+      if(hit){ for(const k of ["j","v","st","nx","d","m","r"]) if(rec[k]) hit[k]=rec[k];
+        if(rec.s) hit.s=parseFloat(rec.s)||hit.s;
+        if(!rec.r&&rec.w){ if(/本命/.test(rec.w))hit.r=hit.r==="終"?hit.r:"S"; }
+        upd++; }
+      else { rows.push({r:rec.r||"未",n:rec.n,s:rec.s?parseFloat(rec.s):null,j:rec.j||"",v:rec.v||"",st:rec.st||"",nx:rec.nx||"",d:rec.d||"",m:rec.m||""}); add++; }
+    }
+    save(); render(); renderTasks();
+    alert(`取込完了：更新 ${upd} 件／新規 ${add} 件ですわ`);
+  };
+  inp.click();
+}
+function doExport(){
+  const head=["ランク","企業名","点","職種","経由","ステータス","次アクション","期限","メモ"];
+  const lines=[head.join(",")].concat(rows.map(r=>[r.r,r.n,r.s??"",r.j,r.v,r.st,r.nx,r.d,r.m].map(v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(",")));
+  const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="ランクボード書き出し_"+new Date().toISOString().slice(0,10).replace(/-/g,"")+".csv"; a.click();
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); document.getElementById(b.dataset.p).classList.add("on");
+});
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{c.classList.toggle("on");render();});
+stamp(); render(); renderCal(); renderTasks();
+</script>
+</body>
+</html>

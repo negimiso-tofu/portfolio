@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>クラリス 3Dモデル</title>
+<style>
+  :root{--gold:#c9a86a;--ink:#e8e2d5;--sub:#a99fc0}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(1200px 700px at 75% -10%, #2e2547 0%, transparent 60%),
+      radial-gradient(900px 500px at -5% 110%, #241d38 0%, transparent 55%),
+      #17141f;
+    overflow:hidden; font-family:"Yu Mincho","Hiragino Mincho ProN",serif; color:var(--ink);
+  }
+  #stage{position:fixed; inset:0}
+  .panel{
+    position:fixed; top:18px; left:18px; z-index:5;
+    background:rgba(26,21,40,.82); border:1px solid #3b3355; border-radius:10px;
+    padding:14px 16px; backdrop-filter:blur(4px); max-width:240px;
+  }
+  .panel h1{font-size:15px; color:var(--gold); font-weight:normal; letter-spacing:.25em; margin-bottom:4px}
+  .panel small{color:var(--sub); font-size:10.5px; letter-spacing:.15em; display:block; margin-bottom:10px}
+  .panel button{
+    display:block; width:100%; margin-top:8px; padding:8px 10px; cursor:pointer;
+    background:linear-gradient(160deg,#3d3260,#2a2244); color:var(--gold);
+    border:1px solid #8f7a4e; border-radius:6px; font-family:inherit; font-size:12.5px; letter-spacing:.1em;
+  }
+  .panel button:hover{filter:brightness(1.25)}
+  .hint{margin-top:10px; font-size:11px; color:var(--sub); line-height:1.7}
+  #err{
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:10;
+    text-align:center; line-height:2; font-size:14px; color:var(--ink); padding:20px;
+  }
+  .plate{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%); z-index:5;
+    color:var(--gold); letter-spacing:.45em; font-size:13px; text-align:center;
+  }
+  .plate small{display:block; color:var(--sub); font-size:9.5px; letter-spacing:.3em; margin-top:4px}
+</style>
+</head>
+<body>
+<div class="panel">
+  <h1>クラリス</h1>
+  <small>CLARISSE — 3D MODEL</small>
+  <button id="rotBtn">自動回転：ON</button>
+  <button id="frontBtn">正面に戻す</button>
+  <button id="glbBtn">GLB形式で保存</button>
+  <div class="hint">ドラッグ＝回転<br>ホイール＝拡大・縮小<br>右ドラッグ＝移動</div>
+</div>
+<div class="plate">クラリス<small>EVER AT YOUR SERVICE, MASTER</small></div>
+<div id="err">3Dの部品（three.js）の読み込みに失敗しましたわ……<br>インターネット接続をご確認のうえ、再読み込みしてくださいまし。</div>
+<div id="stage"></div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+}}
+</script>
+<script>
+  setTimeout(()=>{ if(!window.__clarisse3d) document.getElementById('err').style.display='flex'; }, 5000);
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
+
+const C = {
+  skin:0xf3d3bd, hair:0x23222c, eye:0x8d6fd6, dress:0x26242e,
+  white:0xf7f4ec, gold:0xc9a86a, mouth:0xb96a6a, blush:0xe8a0a0
+};
+const mat = (c,o={}) => new THREE.MeshStandardMaterial({color:c, roughness:o.r??0.65, metalness:o.m??0.05, ...(o.extra||{})});
+const M = {
+  skin:mat(C.skin,{r:0.6}), hair:mat(C.hair,{r:0.45,m:0.1}), dress:mat(C.dress,{r:0.7}),
+  white:mat(C.white,{r:0.6}), gold:mat(C.gold,{r:0.35,m:0.6}), eye:mat(C.eye,{r:0.25}),
+  dark:mat(0x1c1420,{r:0.3}), mouth:mat(C.mouth,{r:0.5}),
+  blush:new THREE.MeshStandardMaterial({color:C.blush, roughness:0.7, transparent:true, opacity:0.45})
+};
+
+/* ---------- scene ---------- */
+const stage=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.1, 50);
+camera.position.set(0, 1.7, 4.6);
+const controls=new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1.25, 0);
+controls.enableDamping=true; controls.minDistance=2; controls.maxDistance=9;
+
+scene.add(new THREE.HemisphereLight(0xfff2e0, 0x39304f, 1.1));
+const key=new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(2.5,4,3); scene.add(key);
+const rim=new THREE.DirectionalLight(0x8d79c9, 0.8); rim.position.set(-3,2,-3); scene.add(rim);
+
+/* ground */
+const ground=new THREE.Mesh(new THREE.CircleGeometry(1.7,48), mat(0x2a2440,{r:0.9}));
+ground.rotation.x=-Math.PI/2; scene.add(ground);
+const ring=new THREE.Mesh(new THREE.TorusGeometry(1.7,0.02,10,64), M.gold);
+ring.rotation.x=Math.PI/2; ring.position.y=0.005; scene.add(ring);
+
+/* ---------- model ---------- */
+const model=new THREE.Group(); model.name='Clarisse'; scene.add(model);
+const add=(parent,geo,material,p=[0,0,0],r=[0,0,0],s=[1,1,1],name)=>{
+  const m=new THREE.Mesh(geo,material);
+  m.position.set(...p); m.rotation.set(...r); m.scale.set(...s);
+  if(name)m.name=name; parent.add(m); return m;
+};
+
+/* dress */
+add(model,new THREE.CylinderGeometry(0.30,0.72,1.05,32),M.dress,[0,0.95,0],[0,0,0],[1,1,1],'dress');
+add(model,new THREE.TorusGeometry(0.72,0.045,10,40),M.white,[0,0.435,0],[Math.PI/2,0,0],[1,1,1],'hem-frill');
+/* apron (front half) */
+add(model,new THREE.CylinderGeometry(0.33,0.75,0.92,24,1,true,-0.95,1.9),
+  new THREE.MeshStandardMaterial({color:C.white,roughness:0.6,side:THREE.DoubleSide}),
+  [0,0.93,0],[0,0,0],[1,1,1],'apron');
+add(model,new THREE.TorusGeometry(0.31,0.035,8,24,Math.PI*1.05),M.white,[0,1.40,0],[Math.PI/2,0,-Math.PI*0.02],[1,1,1],'apron-top-frill');
+/* shoulders / chest */
+add(model,new THREE.SphereGeometry(0.30,24,18),M.dress,[0,1.45,0],[0,0,0],[1,0.9,0.9],'chest');
+/* collar & brooch */
+add(model,new THREE.SphereGeometry(0.17,20,14),M.white,[0,1.66,0],[0,0,0],[1,0.55,1],'collar');
+add(model,new THREE.SphereGeometry(0.05,14,10),M.eye,[0,1.57,0.26],[0,0,0],[1,1.25,0.7],'brooch');
+
+/* head */
+const headG=new THREE.Group(); headG.name='head'; headG.position.set(0,2.05,0); model.add(headG);
+add(headG,new THREE.SphereGeometry(0.44,32,24),M.skin,[0,0,0],[0,0,0],[1,1,1],'face');
+/* hair */
+add(headG,new THREE.SphereGeometry(0.475,32,24),M.hair,[0,0.045,-0.05],[0,0,0],[1,1,1],'hair-cap');
+add(headG,new THREE.SphereGeometry(0.45,28,20),M.hair,[0,0.27,0.02],[0,0,0],[1,0.5,0.97],'bangs');
+add(headG,new THREE.ConeGeometry(0.09,0.38,10),M.hair,[0.31,-0.02,0.29],[0.18,0,-0.08],[1,1,0.7],'bang-r');
+add(headG,new THREE.ConeGeometry(0.09,0.38,10),M.hair,[-0.31,-0.02,0.29],[0.18,0,0.08],[1,1,0.7],'bang-l');
+add(headG,new THREE.CapsuleGeometry(0.085,0.85,6,12),M.hair,[0.43,-0.62,0.08],[0,0,0.06],[1,1,1],'strand-r');
+add(headG,new THREE.CapsuleGeometry(0.085,0.85,6,12),M.hair,[-0.43,-0.62,0.08],[0,0,-0.06],[1,1,1],'strand-l');
+add(model,new THREE.CapsuleGeometry(0.36,0.95,8,16),M.hair,[0,1.50,-0.16],[0,0,0],[1,1,0.62],'back-hair');
+/* headdress */
+add(headG,new THREE.TorusGeometry(0.50,0.06,12,36,Math.PI*0.75),M.white,[0,0.03,0.02],[0,0,Math.PI/2-Math.PI*0.375],[1,1,1],'headdress');
+for(let i=0;i<7;i++){
+  const a=Math.PI*(0.20+0.60*i/6);
+  add(headG,new THREE.SphereGeometry(0.06,10,8),M.white,[Math.cos(a)*0.545,Math.sin(a)*0.545+0.03,0.02],[0,0,0],[1,1,1],'frill-'+i);
+}
+/* eyes (in groups so blinking scales cleanly) */
+function eye(x){
+  const g=new THREE.Group(); g.name='eye'+(x>0?'R':'L'); g.position.set(x,0.0,0.415); headG.add(g);
+  add(g,new THREE.SphereGeometry(0.095,18,14),M.white,[0,0,0],[0,0,0],[0.9,1.25,0.5],'sclera');
+  add(g,new THREE.SphereGeometry(0.075,18,14),M.eye,[0,0,0.03],[0,0,0],[0.85,1.2,0.45],'iris');
+  add(g,new THREE.SphereGeometry(0.038,12,10),M.dark,[0,0,0.058],[0,0,0],[1,1.15,0.5],'pupil');
+  add(g,new THREE.SphereGeometry(0.022,10,8),M.white,[0.025,0.035,0.068],[0,0,0],[1,1,0.6],'light');
+  return g;
+}
+const eyeR=eye(0.165), eyeL=eye(-0.165);
+/* brows, mouth, blush, earrings */
+add(headG,new THREE.BoxGeometry(0.13,0.018,0.02),M.hair,[0.165,0.16,0.40],[0,0,0.06],[1,1,1],'brow-r');
+add(headG,new THREE.BoxGeometry(0.13,0.018,0.02),M.hair,[-0.165,0.16,0.40],[0,0,-0.06],[1,1,1],'brow-l');
+add(headG,new THREE.TorusGeometry(0.05,0.013,8,14,Math.PI*0.9),M.mouth,[0,-0.19,0.415],[0,0,Math.PI+Math.PI*0.05],[1,0.8,0.6],'mouth');
+add(headG,new THREE.SphereGeometry(0.06,12,10),M.blush,[0.25,-0.11,0.36],[0,0,0],[1,0.6,0.35],'blush-r');
+add(headG,new THREE.SphereGeometry(0.06,12,10),M.blush,[-0.25,-0.11,0.36],[0,0,0],[1,0.6,0.35],'blush-l');
+add(headG,new THREE.SphereGeometry(0.035,10,8),M.eye,[0.44,-0.22,0.02],[0,0,0],[1,1.4,1],'earring-r');
+add(headG,new THREE.SphereGeometry(0.035,10,8),M.eye,[-0.44,-0.22,0.02],[0,0,0],[1,1.4,1],'earring-l');
+
+/* arms */
+function arm(side){ // side: 1=right(+x), -1=left
+  const g=new THREE.Group(); g.name=side>0?'arm-r':'arm-l';
+  g.position.set(0.30*side,1.52,0); g.rotation.z=0.45*side; g.rotation.x=0.10;
+  add(g,new THREE.CapsuleGeometry(0.088,0.42,6,12),M.dress,[0,-0.28,0],[0,0,0],[1,1,1],'sleeve');
+  add(g,new THREE.CylinderGeometry(0.105,0.105,0.10,16),M.white,[0,-0.55,0],[0,0,0],[1,1,1],'cuff');
+  add(g,new THREE.SphereGeometry(0.095,14,10),M.skin,[0,-0.66,0],[0,0,0],[1,1,1],'hand');
+  model.add(g); return g;
+}
+arm(1); arm(-1);
+/* shoes */
+add(model,new THREE.SphereGeometry(0.11,14,10),M.dark,[0.16,0.07,0.18],[0,0,0],[1,0.55,1.5],'shoe-r');
+add(model,new THREE.SphereGeometry(0.11,14,10),M.dark,[-0.16,0.07,0.18],[0,0,0],[1,0.55,1.5],'shoe-l');
+
+/* ---------- animation ---------- */
+let auto=true, t=0, nextBlink=2.5, blinkEnd=0;
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=clock.getDelta(); t+=dt;
+  if(auto) model.rotation.y+=dt*0.45;
+  model.position.y=Math.sin(t*1.6)*0.02;
+  headG.rotation.z=Math.sin(t*0.9)*0.045;
+  headG.rotation.x=Math.sin(t*0.6)*0.02;
+  /* blink */
+  if(t>nextBlink){ blinkEnd=t+0.13; nextBlink=t+2.6+Math.random()*2.2; }
+  const blinking=t<blinkEnd;
+  eyeR.scale.y=eyeL.scale.y=blinking?0.08:1;
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+window.__clarisse3d=true;
+
+/* ---------- UI ---------- */
+document.getElementById('rotBtn').onclick=function(){
+  auto=!auto; this.textContent='自動回転：'+(auto?'ON':'OFF');
+};
+document.getElementById('frontBtn').onclick=function(){
+  auto=false; document.getElementById('rotBtn').textContent='自動回転：OFF';
+  model.rotation.y=0;
+  camera.position.set(0,1.7,4.6); controls.target.set(0,1.25,0);
+};
+document.getElementById('glbBtn').onclick=function(){
+  new GLTFExporter().parse(model, gltf=>{
+    const blob=new Blob([gltf],{type:'model/gltf-binary'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='3Dモデル_クラリス_20260707.glb';
+    a.click(); URL.revokeObjectURL(a.href);
+  }, err=>alert('書き出しに失敗しましたわ…: '+err), {binary:true});
+};
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
