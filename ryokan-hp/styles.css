@@ -1,0 +1,247 @@
+/* =============================================================================
+   湯宿 忘雪堂 — 骨子用スタイル（構造確認のための最小限）
+
+   デザインはCodexが担当します。全面的に書き換えて構いません。
+   ただし以下の3つは残してください（アクセシビリティの土台）。
+     1. .skip-link のフォーカス時表示
+     2. :focus-visible のアウトライン
+     3. prefers-reduced-motion の尊重
+
+   この宿は「雪」「夜」「灯り」の三語で出来ています。
+   明るく元気な配色にはしないこと。暗さと余白が主役です。
+   ========================================================================== */
+
+:root {
+  --color-text: #26262b;
+  --color-muted: #6f6f78;
+  --color-accent: #7a6a4f;      /* 仮の枯茶。行灯の色を想定 */
+  --color-bg: #fbfaf8;
+  --color-bg-soft: #f1eeea;
+  --color-line: #ded9d2;
+  --measure: 62ch;              /* 縦書き的な読み心地に寄せてやや狭く */
+  --radius: 2px;                /* 和の宿なので角丸はほぼ付けない */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  color: var(--color-text);
+  background: var(--color-bg);
+  /* Codexへ：見出しは明朝、本文はゴシックの組み合わせが合うと思われます */
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  font-size: 16px;
+  line-height: 1.9;            /* 読み物寄りなので他サイトより広く */
+}
+
+img, svg { max-width: 100%; height: auto; }
+a { color: var(--color-accent); }
+
+/* ----- 制作サンプルの断り書き ----- */
+.sample-notice {
+  padding: .5rem 1rem;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: .75rem;
+  text-align: center;
+}
+
+/* ----- 1. スキップリンク（残すこと） ----- */
+.skip-link { position: absolute; left: -9999px; top: 0; background: var(--color-accent); color: #fff; padding: .5rem 1rem; z-index: 100; }
+.skip-link:focus { left: 0; }
+
+/* ----- 2. フォーカス表示（残すこと） ----- */
+:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+
+/* ----- レイアウトの器 ----- */
+.site-header, .breadcrumb, main > section, .site-footer {
+  max-width: 1040px; margin-inline: auto; padding-inline: clamp(1rem, 5vw, 2.5rem);
+}
+main > section { padding-block: clamp(2.5rem, 7vw, 5rem); }
+main > section + section { border-top: 1px solid var(--color-line); }
+
+/* ----- ヘッダー ----- */
+.site-header { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; padding-block: 1.25rem; border-bottom: 1px solid var(--color-line); }
+.brand { margin: 0; font-weight: 500; letter-spacing: .08em; }
+.brand a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: .6rem; }
+.brand-mark { display: inline-grid; place-items: center; width: 2.2em; height: 2.2em; background: var(--color-accent); color: var(--color-bg); font-size: .8em; }
+.globalnav ul { display: flex; flex-wrap: wrap; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+.globalnav a { color: inherit; text-decoration: none; letter-spacing: .06em; }
+.globalnav a:hover { text-decoration: underline; }
+.globalnav [aria-current="page"] { color: var(--color-accent); }
+.header-cta { margin: 0 0 0 auto; }
+.menu-toggle { display: none; }
+
+/* ----- パンくず ----- */
+.breadcrumb { padding-block: .75rem; font-size: .8125rem; color: var(--color-muted); }
+.breadcrumb ol { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; margin: 0; padding: 0; }
+.breadcrumb li + li::before { content: "―"; margin-right: .5rem; color: var(--color-line); }
+
+/* ----- 見出し ----- */
+h1 { font-size: clamp(1.7rem, 4.5vw, 2.6rem); line-height: 1.5; margin: 0 0 .6em; font-weight: 500; letter-spacing: .04em; }
+h2 { font-size: clamp(1.25rem, 3vw, 1.6rem); line-height: 1.6; margin: 0 0 .8em; font-weight: 500; letter-spacing: .04em; }
+h3 { font-size: 1.05rem; margin: 1.6em 0 .5em; font-weight: 700; }
+.eyebrow { margin: 0 0 .5em; font-size: .75rem; letter-spacing: .3em; color: var(--color-accent); }
+.lead, .section-lead { max-width: var(--measure); color: var(--color-muted); }
+p { max-width: var(--measure); }
+
+/* ----- ボタン ----- */
+.button { display: inline-block; padding: .75em 1.6em; border: 1px solid var(--color-accent); border-radius: var(--radius); text-decoration: none; letter-spacing: .08em; line-height: 1.4; }
+.button-primary { background: var(--color-accent); color: var(--color-bg); }
+.button-ghost { background: transparent; color: var(--color-accent); }
+
+/* ----- ヒーロー（このサイトは画像を先に見せる） ----- */
+.hero { display: grid; gap: 2.5rem; }
+.hero-figure { margin: 0; order: -1; }
+.hero-image { min-height: 300px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+
+.img-placeholder {
+  display: grid; place-items: center; min-height: 220px;
+  background: var(--color-bg-soft); border: 1px dashed var(--color-line);
+  color: var(--color-muted); font-size: .8125rem;
+}
+
+/* ----- ごあいさつ ----- */
+.kotoba-body { max-width: var(--measure); }
+.sign { text-align: right; margin-top: 2em; letter-spacing: .1em; }
+
+/* ----- 湯 ----- */
+.yu-list { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); list-style: none; margin: 2rem 0 0; padding: 0; }
+.yu-card { background: var(--color-bg-soft); }
+.yu-thumb { min-height: 170px; border: 0; }
+.yu-body { padding: 1.1rem 1.3rem 1.5rem; }
+.yu-body h3 { margin-top: 0; }
+.yu-body p { max-width: none; font-size: .9375rem; }
+
+.yu-block { display: grid; gap: 2rem; }
+.yu-figure { margin: 0; }
+.yu-figure .img-placeholder { min-height: 260px; }
+
+/* ----- カード ----- */
+.card-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); list-style: none; margin: 0; padding: 0; }
+.card { background: var(--color-bg-soft); }
+.card h3 { margin: 1rem 1.3rem .4rem; }
+.card p { max-width: none; margin-inline: 1.3rem; font-size: .9375rem; }
+.card p:last-child { padding-bottom: 1.3rem; }
+.card-thumb { min-height: 180px; border: 0; }
+
+/* ----- 客室 ----- */
+.room-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); list-style: none; margin: 2rem 0 0; padding: 0; }
+.room-card { background: var(--color-bg-soft); }
+.room-card-special { outline: 1px solid var(--color-accent); outline-offset: -1px; }
+.room-thumb { min-height: 180px; border: 0; }
+.room-body { padding: 1.1rem 1.3rem 1.5rem; }
+.room-body h3 { margin-top: 0; }
+.room-body p { max-width: none; font-size: .9375rem; }
+.room-meta { display: flex; flex-wrap: wrap; gap: .8rem; margin: 0 0 .6rem; font-size: .8125rem; color: var(--color-muted); }
+.room-meta span:not(:last-child)::after { content: "／"; margin-left: .8rem; color: var(--color-line); }
+
+/* ----- お膳 ----- */
+.zen-body { display: grid; gap: 2rem; margin-bottom: 3rem; }
+.zen-figure { margin: 0; }
+.zen-figure .img-placeholder { min-height: 240px; }
+figcaption { margin-top: .5rem; font-size: .8125rem; color: var(--color-muted); }
+
+/* ----- お約束（世界観の要。読み飛ばされない見た目に） ----- */
+.yakusoku-list { max-width: var(--measure); margin: 2rem 0 0; padding-left: 1.5em; }
+.yakusoku-list li { margin-bottom: 1.8em; }
+.yakusoku-list h3 { margin: 0 0 .3em; font-size: 1rem; }
+.yakusoku-list p { margin: 0; font-size: .9375rem; color: var(--color-muted); }
+
+/* ----- リスト ----- */
+.check-list { max-width: var(--measure); padding-left: 1.3em; }
+.check-list li { margin-bottom: .4em; }
+.flow-list { max-width: var(--measure); padding-left: 1.5em; }
+.flow-list h3 { margin: 1.2em 0 .25em; font-size: 1rem; }
+.flow-list p { margin: 0; font-size: .9375rem; }
+.toc { background: var(--color-bg-soft); }
+.toc h2 { font-size: .95rem; }
+.toc ol { margin: 0; padding-left: 1.5em; }
+
+/* ----- 定義リスト・表 ----- */
+.data-list { margin: 1.5rem 0 0; max-width: var(--measure); }
+.data-list > div { display: grid; grid-template-columns: 7em 1fr; gap: 1rem; padding: .55rem 0; border-bottom: 1px solid var(--color-line); }
+.data-list dt { color: var(--color-muted); font-size: .9375rem; }
+.data-list dd { margin: 0; }
+
+.table-scroll { overflow-x: auto; margin-bottom: 1.5rem; }
+table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+caption { text-align: left; padding-bottom: .6rem; color: var(--color-muted); font-size: .8125rem; }
+th, td { padding: .75rem .9rem; border-bottom: 1px solid var(--color-line); text-align: left; vertical-align: top; }
+thead th { border-bottom: 2px solid var(--color-line); font-weight: 500; }
+.data-table th[scope="row"] { width: 8em; color: var(--color-muted); font-weight: 400; }
+
+.note, .field-help { font-size: .8125rem; color: var(--color-muted); }
+.notice { max-width: var(--measure); padding: 1rem 1.2rem; background: var(--color-bg-soft); border-left: 2px solid var(--color-accent); }
+.notice p { margin: 0; max-width: none; }
+
+/* ----- FAQ ----- */
+.faq-list { max-width: var(--measure); }
+.faq-list details { border-bottom: 1px solid var(--color-line); padding: 1rem 0; }
+.faq-list summary { cursor: pointer; }
+.faq-list details > div { padding-top: .6rem; color: var(--color-muted); }
+
+/* ----- 文（フォーム） ----- */
+.contact-form { max-width: 38rem; margin-top: 2rem; }
+.field { margin-bottom: 1.6rem; border: 0; padding: 0; }
+.field > label, .field legend { display: block; margin-bottom: .4rem; font-weight: 700; font-size: .9375rem; }
+.field input[type="text"], .field input[type="email"], .field input[type="tel"],
+.field input[type="date"], .field input[type="number"], .field select, .field textarea {
+  width: 100%; padding: .75em .85em; border: 1px solid var(--color-line);
+  border-radius: var(--radius); font: inherit; background: var(--color-bg); color: inherit;
+}
+.radio-list { list-style: none; margin: 0; padding: 0; }
+.radio-list li { display: flex; align-items: center; gap: .5rem; padding: .25rem 0; }
+.radio-list label { font-weight: 400; margin: 0; }
+.field-check { display: flex; align-items: center; gap: .5rem; }
+.field-check label { font-weight: 400; margin: 0; }
+.required-mark { display: inline-block; padding: .15em .55em; background: var(--color-accent); color: var(--color-bg); font-size: .7rem; vertical-align: middle; }
+
+/* ----- 道 ----- */
+.michi-body, .stay-digest .card-grid { display: grid; gap: 2rem; }
+.map-figure { margin: 0; }
+
+/* ----- CTA・フッター ----- */
+.cta { background: var(--color-bg-soft); text-align: center; }
+.cta p { margin-inline: auto; }
+.cta-actions { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
+.site-footer { padding-block: 2.5rem; border-top: 1px solid var(--color-line); }
+.site-footer address { font-style: normal; font-size: .875rem; color: var(--color-muted); }
+.footer-nav ul { display: flex; flex-wrap: wrap; gap: 1.2rem; list-style: none; margin: 1.5rem 0; padding: 0; font-size: .875rem; }
+.copyright { color: var(--color-muted); }
+
+/* ----- PC幅 ----- */
+@media (min-width: 768px) {
+  .hero { grid-template-columns: 1fr 1fr; align-items: center; }
+  .hero-figure { order: 0; }
+  .yu-block { grid-template-columns: 1fr 1fr; align-items: center; }
+  .yu-block:nth-of-type(even) .yu-figure { order: 1; }
+  .zen-body, .michi-body { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+
+/* ----- スマホ幅 ----- */
+@media (max-width: 767px) {
+  .menu-toggle { display: inline-block; margin-left: auto; padding: .55em 1.1em; font: inherit; background: none; border: 1px solid var(--color-line); border-radius: var(--radius); }
+  .globalnav { flex-basis: 100%; }
+  .globalnav[hidden] { display: none; }
+  .globalnav ul { flex-direction: column; gap: 0; }
+  .globalnav li { border-top: 1px solid var(--color-line); }
+  .globalnav a { display: block; padding: .85rem 0; }
+  .header-cta { flex-basis: 100%; margin-left: 0; }
+  .header-cta .button { display: block; text-align: center; }
+  .data-list > div { grid-template-columns: 1fr; gap: .2rem; }
+}
+
+/* ----- 3. アニメーションを控える設定の尊重（残すこと） ----- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* ----- 印刷（お代の表を印刷される想定） ----- */
+@media print {
+  .site-header, .breadcrumb, .cta, .site-footer, .skip-link, .toc { display: none; }
+  body { font-size: 11pt; }
+}
